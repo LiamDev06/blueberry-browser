@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { LLMClient } from "../LLMClient";
+import { LLMClient } from "./LLMClient";
 
 const taskGoalSchema = z.object({
   goal: z.string().describe("One sentence capturing the user's underlying intent."),
