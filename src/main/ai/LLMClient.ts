@@ -14,7 +14,7 @@ import { anthropic } from "@ai-sdk/anthropic";
 import * as dotenv from "dotenv";
 import { join } from "path";
 import type { z } from "zod";
-import type { Window } from "./Window";
+import type { Window } from "../Window";
 
 // Load environment variables from .env file
 dotenv.config({ path: join(__dirname, "../../.env") });
