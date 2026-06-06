@@ -1,5 +1,5 @@
-import { generateText, Output, type LanguageModel } from "ai";
 import { z } from "zod";
+import type { LLMClient } from "../LLMClient";
 
 const taskGoalSchema = z.object({
   goal: z.string().describe("One sentence capturing the user's underlying intent."),
@@ -25,7 +25,7 @@ const validationSchema = z.object({
 export type Validation = z.infer<typeof validationSchema>;
 
 export async function generateGoal(
-  model: LanguageModel,
+  llm: LLMClient,
   query: string,
   startUrl: string
 ): Promise<TaskGoal> {
@@ -46,12 +46,11 @@ export async function generateGoal(
   }
 
   try {
-    const { output } = await generateText({
-      model,
-      output: Output.object({ schema: taskGoalSchema }),
-      system: constructSystemPrompt(),
-      prompt: constructUserPrompt(),
-    });
+    const output = await llm.generateObject(
+      taskGoalSchema,
+      constructSystemPrompt(),
+      constructUserPrompt()
+    );
 
     return { goal: output.goal, criteria: output.criteria.slice(0, 4) };
   } catch (error) {
@@ -66,7 +65,7 @@ type Evidence = {
 }
 
 export async function validateGoal(
-  model: LanguageModel,
+  llm: LLMClient,
   goal: TaskGoal,
   evidence: Evidence,
   summary: string
@@ -103,14 +102,11 @@ export async function validateGoal(
   }
 
   try {
-    const { output } = await generateText({
-      model,
-      output: Output.object({ schema: validationSchema }),
-      system: constructSystemPrompt(),
-      prompt: constructUserPrompt(),
-    });
-
-    return output;
+    return await llm.generateObject(
+      validationSchema,
+      constructSystemPrompt(),
+      constructUserPrompt()
+    );
   } catch (error) {
     console.error("Goal validation failed:", error);
 

@@ -1,9 +1,19 @@
 import { WebContents } from "electron";
-import { streamText, type LanguageModel, type CoreMessage } from "ai";
+import {
+  streamText,
+  generateText,
+  Output,
+  type LanguageModel,
+  type ModelMessage,
+  type ToolSet,
+  type StopCondition,
+  type StreamTextResult,
+} from "ai";
 import { openai } from "@ai-sdk/openai";
 import { anthropic } from "@ai-sdk/anthropic";
 import * as dotenv from "dotenv";
 import { join } from "path";
+import type { z } from "zod";
 import type { Window } from "./Window";
 
 // Load environment variables from .env file
@@ -35,7 +45,7 @@ export class LLMClient {
   private readonly provider: LLMProvider;
   private readonly modelName: string;
   private readonly model: LanguageModel | null;
-  private messages: CoreMessage[] = [];
+  private messages: ModelMessage[] = [];
 
   constructor(webContents: WebContents) {
     this.webContents = webContents;
@@ -101,6 +111,44 @@ export class LLMClient {
     }
   }
 
+  async generateObject<T>(
+    schema: z.ZodType<T>,
+    system: string,
+    prompt: string
+  ): Promise<T> {
+    if (!this.model) {
+      throw new Error("LLM is not configured.");
+    }
+
+    const { output } = await generateText({
+      model: this.model,
+      output: Output.object({ schema }),
+      system,
+      prompt,
+    });
+
+    return output;
+  }
+
+  streamWithTools(
+    system: string,
+    prompt: string,
+    tools: ToolSet,
+    stopConditions: StopCondition<ToolSet>[]
+  ): StreamTextResult<ToolSet, never> {
+    if (!this.model) {
+      throw new Error("LLM is not configured.");
+    }
+
+    return streamText({
+      model: this.model,
+      system,
+      prompt,
+      tools,
+      stopWhen: stopConditions,
+    });
+  }
+
   async sendChatMessage(request: ChatRequest): Promise<void> {
     try {
       // Get screenshot from active tab if available
@@ -134,8 +182,8 @@ export class LLMClient {
         text: request.message,
       });
 
-      // Create user message in CoreMessage format
-      const userMessage: CoreMessage = {
+      // Create user message in ModelMessage format
+      const userMessage: ModelMessage = {
         role: "user",
         content: userContent.length === 1 ? request.message : userContent,
       };
@@ -166,7 +214,7 @@ export class LLMClient {
     this.sendMessagesToRenderer();
   }
 
-  getMessages(): CoreMessage[] {
+  getMessages(): ModelMessage[] {
     return this.messages;
   }
 
@@ -174,7 +222,7 @@ export class LLMClient {
     this.webContents.send("chat-messages-updated", this.messages);
   }
 
-  private async prepareMessagesWithContext(_request: ChatRequest): Promise<CoreMessage[]> {
+  private async prepareMessagesWithContext(_request: ChatRequest): Promise<ModelMessage[]> {
     // Get page context from active tab
     let pageUrl: string | null = null;
     let pageText: string | null = null;
@@ -192,7 +240,7 @@ export class LLMClient {
     }
 
     // Build system message
-    const systemMessage: CoreMessage = {
+    const systemMessage: ModelMessage = {
       role: "system",
       content: this.buildSystemPrompt(pageUrl, pageText),
     };
@@ -231,7 +279,7 @@ export class LLMClient {
   }
 
   private async streamResponse(
-    messages: CoreMessage[],
+    messages: ModelMessage[],
     messageId: string
   ): Promise<void> {
     if (!this.model) {
@@ -260,7 +308,7 @@ export class LLMClient {
     let accumulatedText = "";
 
     // Create a placeholder assistant message
-    const assistantMessage: CoreMessage = {
+    const assistantMessage: ModelMessage = {
       role: "assistant",
       content: "",
     };
