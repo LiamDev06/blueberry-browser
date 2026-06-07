@@ -215,6 +215,7 @@ export class BrowserAgent {
       "- Only use element indices from the latest snapshot.",
       "- If a link/button is inside a dropdown or flyout, hover() its trigger first; its items then appear in the next snapshot.",
       "- If something isn't visible, scroll to reveal it, or navigate to a likely URL.",
+      "- The snapshot only lists elements, not how the page looks. When appearance matters — layout, images, charts, colors, or confirming something rendered the way you expect — take a screenshot to see the page for yourself.",
       "- You can work across multiple tabs: create_tab opens a new tab and switches to it, switch_tab moves you to another tab by its ID, list_tabs shows everything that's open, and close_tab closes one. Snapshots and actions always apply to the tab you're currently in. Use separate tabs to compare options side by side (e.g. open each candidate in its own tab), then switch between them to decide.",
       "- Don't repeat an action that changed nothing; try another way.",
       "- When you believe the goal's intent is met, call done() with a natural summary or the answer. A validator checks the page; if it isn't met it tells you what's missing and you keep going.",

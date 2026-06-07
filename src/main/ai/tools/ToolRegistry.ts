@@ -9,6 +9,7 @@ import { NavigateTool } from "./NavigateTool";
 import { BackTool } from "./BackTool";
 import { ForwardTool } from "./ForwardTool";
 import { ScrollTool } from "./ScrollTool";
+import { ScreenshotTool } from "./ScreenshotTool";
 import { RemixTool } from "./RemixTool";
 import { ListTabsTool } from "./ListTabsTool";
 import { CreateTabTool } from "./CreateTabTool";
@@ -28,7 +29,7 @@ export class ToolRegistry {
           inputSchema: target.inputSchema,
           execute: async (input, { toolCallId }) => {
             if (dependencies.isAborted()) {
-              return "The user stopped the task.";
+              return { text: "The user stopped the task." };
             }
 
             const ctx = new ToolContext(dependencies, target.name, { toolCallId });
@@ -36,17 +37,34 @@ export class ToolRegistry {
             const result = await target.execute(input, ctx);
             ctx.finishAction(result.status, result.title);
 
+            let text: string;
             if (!result.reobserve) {
-              return result.message ?? "";
+              text = result.message ?? "";
+            } else {
+              await waitForIdle(ctx.tab, ctx.isAborted);
+              const snapshot = await ctx.registry.observe(ctx.tab);
+              text = result.message
+                ? `${result.message}\n\nCurrent page:\n${snapshot}`
+                : `Current page:\n${snapshot}`;
             }
 
-            await waitForIdle(ctx.tab, ctx.isAborted);
-            const snapshot = await ctx.registry.observe(ctx.tab);
-
-            return result.message
-              ? `${result.message}\n\nCurrent page:\n${snapshot}`
-              : `Current page:\n${snapshot}`;
+            return { text, image: result.image };
           },
+          toModelOutput: ({ output }) => ({
+            type: "content",
+            value: [
+              { type: "text", text: output.text },
+              ...(output.image
+                ? [
+                    {
+                      type: "media" as const,
+                      data: output.image.data,
+                      mediaType: output.image.mediaType,
+                    },
+                  ]
+                : []),
+            ],
+          }),
         }),
       ])
     );
@@ -61,6 +79,7 @@ export const agentTools = new ToolRegistry([
   new BackTool(),
   new ForwardTool(),
   new ScrollTool(),
+  new ScreenshotTool(),
   new RemixTool(),
   new ListTabsTool(),
   new CreateTabTool(),

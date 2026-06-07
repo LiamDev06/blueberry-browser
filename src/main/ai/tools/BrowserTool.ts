@@ -6,16 +6,22 @@ export type ToolCall = {
   toolCallId: string;
 }
 
+export type ToolImage = {
+  data: string; // base64-encoded, no data: prefix
+  mediaType: string;
+}
+
 export type ToolResult = {
   status: "done" | "error";
   title: string;
   reobserve: boolean;
   message?: string;
+  image?: ToolImage;
 }
 
-// Succeeded: mark the step done and follow with a fresh snapshot (+ optional note)
-export function ok(title: string, note?: string): ToolResult {
-  return { status: "done", title, reobserve: true, message: note };
+// Succeeded: mark the step done and follow with a fresh snapshot (+ optional note and image)
+export function ok(title: string, note?: string, image?: ToolImage): ToolResult {
+  return { status: "done", title, reobserve: true, message: note, image };
 }
 
 // Failed: mark the step errored but still re-observe so the model sees the page
