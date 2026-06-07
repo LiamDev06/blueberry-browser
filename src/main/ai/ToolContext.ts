@@ -1,10 +1,10 @@
-import type { Tab } from "../../Tab";
-import type { Window } from "../../Window";
-import type { AgentOverlay } from "../AgentOverlay";
+import type { Tab } from "../Tab";
+import type { Window } from "../Window";
+import type { AgentOverlay } from "./AgentOverlay";
 import type { ActionStatus, AgentRun, RunStatus, ToolName } from "@shared/types";
-import type { TaskGoal } from "../AgentGoal";
-import type { ElementRegistry } from "../../page/registry";
-import type { LLMClient } from "../LLMClient";
+import type { TaskGoal } from "./AgentGoal";
+import type { ElementRegistry } from "../page/registry";
+import type { LLMClient } from "./LLMClient";
 import type { ToolCall } from "./BrowserTool";
 
 export interface ToolDependencies {

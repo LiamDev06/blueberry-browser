@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { BrowserTool, ok, type ToolResult } from "./BrowserTool";
-import type { ToolContext } from "./ToolContext";
+import { BrowserTool, ok, type ToolResult } from "../BrowserTool";
+import type { ToolContext } from "../ToolContext";
 
 const MAX_WIDTH = 1024;
 

@@ -1,21 +1,21 @@
 import { tool, type ToolSet } from "ai";
-import { waitForIdle } from "../../page/observer";
+import { waitForIdle } from "../page/observer";
 import type { BrowserTool } from "./BrowserTool";
 import { ToolContext, type ToolDependencies } from "./ToolContext";
-import { ClickTool } from "./ClickTool";
-import { HoverTool } from "./HoverTool";
-import { TypeTool } from "./TypeTool";
-import { NavigateTool } from "./NavigateTool";
-import { BackTool } from "./BackTool";
-import { ForwardTool } from "./ForwardTool";
-import { ScrollTool } from "./ScrollTool";
-import { ScreenshotTool } from "./ScreenshotTool";
-import { RemixTool } from "./RemixTool";
-import { ListTabsTool } from "./ListTabsTool";
-import { CreateTabTool } from "./CreateTabTool";
-import { SwitchTabTool } from "./SwitchTabTool";
-import { CloseTabTool } from "./CloseTabTool";
-import { DoneTool } from "./DoneTool";
+import { ClickTool } from "./tools/ClickTool";
+import { HoverTool } from "./tools/HoverTool";
+import { TypeTool } from "./tools/TypeTool";
+import { NavigateTool } from "./tools/NavigateTool";
+import { BackTool } from "./tools/BackTool";
+import { ForwardTool } from "./tools/ForwardTool";
+import { ScrollTool } from "./tools/ScrollTool";
+import { ScreenshotTool } from "./tools/ScreenshotTool";
+import { RemixTool } from "./tools/RemixTool";
+import { ListTabsTool } from "./tools/ListTabsTool";
+import { CreateTabTool } from "./tools/CreateTabTool";
+import { SwitchTabTool } from "./tools/SwitchTabTool";
+import { CloseTabTool } from "./tools/CloseTabTool";
+import { DoneTool } from "./tools/DoneTool";
 
 export class ToolRegistry {
   constructor(private readonly tools: BrowserTool<any>[]) {}

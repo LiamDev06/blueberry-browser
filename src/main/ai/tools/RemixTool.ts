@@ -1,7 +1,7 @@
 import { z } from "zod";
 import sanitizeHtml from "sanitize-html";
-import { BrowserTool, ok, type ToolResult } from "./BrowserTool";
-import type { ToolContext } from "./ToolContext";
+import { BrowserTool, ok, type ToolResult } from "../BrowserTool";
+import type { ToolContext } from "../ToolContext";
 import { replaceDocument } from "../../page/actions";
 import { readPageContent } from "../../page/observer";
 import type { PageContent } from "../../page/types";

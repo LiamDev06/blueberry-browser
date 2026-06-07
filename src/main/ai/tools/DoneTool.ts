@@ -1,8 +1,8 @@
 import { z } from "zod";
 import { readPageContent } from "../../page/observer";
 import { validateGoal } from "../AgentGoal";
-import { BrowserTool, ok, finish, type ToolResult } from "./BrowserTool";
-import type { ToolContext } from "./ToolContext";
+import { BrowserTool, ok, finish, type ToolResult } from "../BrowserTool";
+import type { ToolContext } from "../ToolContext";
 
 const doneInputSchema = z.object({
   summary: z

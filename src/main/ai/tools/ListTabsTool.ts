@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { BrowserTool, finish, type ToolResult } from "./BrowserTool";
-import type { ToolContext } from "./ToolContext";
+import { BrowserTool, finish, type ToolResult } from "../BrowserTool";
+import type { ToolContext } from "../ToolContext";
 
 const listTabsInputSchema = z.object({});
 

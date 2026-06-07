@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { BrowserTool, ok, fail, type ToolResult } from "./BrowserTool";
-import type { ToolContext } from "./ToolContext";
+import { BrowserTool, ok, fail, type ToolResult } from "../BrowserTool";
+import type { ToolContext } from "../ToolContext";
 
 const closeTabInputSchema = z.object({
   tabId: z.string().describe("The ID of the tab to close."),

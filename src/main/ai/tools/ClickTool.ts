@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { locateElement, verifyPoint } from "../../page/actions";
-import { BrowserTool, ok, fail, type ToolResult } from "./BrowserTool";
-import type { ToolContext } from "./ToolContext";
+import { BrowserTool, ok, fail, type ToolResult } from "../BrowserTool";
+import type { ToolContext } from "../ToolContext";
 import { HOVER_MS } from "./constants";
 import { Utils } from "../../utils";
 

@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { scroll } from "../../page/actions";
-import { BrowserTool, ok, type ToolResult } from "./BrowserTool";
-import type { ToolContext } from "./ToolContext";
+import { BrowserTool, ok, type ToolResult } from "../BrowserTool";
+import type { ToolContext } from "../ToolContext";
 
 const scrollInputSchema = z.object({
   direction: z.enum(["up", "down"]),
