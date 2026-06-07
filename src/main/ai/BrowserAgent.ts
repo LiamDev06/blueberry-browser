@@ -140,16 +140,22 @@ export class BrowserAgent {
             break;
           }
           case "reasoning-start": {
-            run.items.push({ id: part.id, kind: "reasoning", text: "" });
+            const last = run.items[run.items.length - 1];
+            if (last?.kind === "reasoning") {
+              if (last.text) {
+                last.text += "\n\n";
+              }
+            } else {
+              run.items.push({ id: part.id, kind: "reasoning", text: "" });
+            }
+
             this.dirty = true;
             break;
           }
           case "reasoning-delta": {
-            const item = run.items.find(
-              (item) => item.kind === "reasoning" && item.id === part.id
-            );
-            if (item) {
-              item.text = (item.text || "") + part.text;
+            const last = run.items[run.items.length - 1];
+            if (last?.kind === "reasoning") {
+              last.text = (last.text || "") + part.text;
               this.dirty = true;
             }
             break;
