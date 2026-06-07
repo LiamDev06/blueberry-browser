@@ -50,7 +50,6 @@ export class ClickTool extends BrowserTool<ClickInput> {
       );
     }
 
-    ctx.overlay?.clickAt(loc.x, loc.y);
     ctx.tab.clickAt(loc.x, loc.y);
     return ok(`Clicked ${description || check.target}`);
   }

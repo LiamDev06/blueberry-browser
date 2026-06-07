@@ -13,6 +13,7 @@ export default defineConfig({
         input: {
           topbar: resolve(__dirname, "src/preload/topbar.ts"),
           sidebar: resolve(__dirname, "src/preload/sidebar.ts"),
+          overlay: resolve(__dirname, "src/preload/overlay.ts"),
         },
       },
     },
@@ -24,6 +25,7 @@ export default defineConfig({
         input: {
           topbar: resolve(__dirname, "src/renderer/topbar/index.html"),
           sidebar: resolve(__dirname, "src/renderer/sidebar/index.html"),
+          overlay: resolve(__dirname, "src/renderer/overlay/index.html"),
         },
       },
     },
