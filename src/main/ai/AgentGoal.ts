@@ -46,10 +46,10 @@ export async function generateGoal(
   }
 
   try {
-    const output = await llm.generateObject(
-      taskGoalSchema,
+    const output = await llm.generate(
       constructSystemPrompt(),
-      constructUserPrompt()
+      constructUserPrompt(),
+      taskGoalSchema
     );
 
     return { goal: output.goal, criteria: output.criteria.slice(0, 4) };
@@ -102,10 +102,10 @@ export async function validateGoal(
   }
 
   try {
-    return await llm.generateObject(
-      validationSchema,
+    return await llm.generate(
       constructSystemPrompt(),
-      constructUserPrompt()
+      constructUserPrompt(),
+      validationSchema
     );
   } catch (error) {
     console.error("Goal validation failed:", error);

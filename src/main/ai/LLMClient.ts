@@ -111,25 +111,6 @@ export class LLMClient {
     }
   }
 
-  async generateObject<T>(
-    schema: z.ZodType<T>,
-    system: string,
-    prompt: string
-  ): Promise<T> {
-    if (!this.model) {
-      throw new Error("LLM is not configured.");
-    }
-
-    const { output } = await generateText({
-      model: this.model,
-      output: Output.object({ schema }),
-      system,
-      prompt,
-    });
-
-    return output;
-  }
-
   streamWithTools(
     system: string,
     prompt: string,
@@ -207,6 +188,34 @@ export class LLMClient {
       console.error("Error in LLM request:", error);
       this.handleStreamError(error, request.messageId);
     }
+  }
+
+  async generate(system: string, prompt: string): Promise<string>;
+  async generate<T>(
+    system: string,
+    prompt: string,
+    schema: z.ZodType<T>
+  ): Promise<T>;
+  async generate<T>(
+    system: string,
+    prompt: string,
+    schema?: z.ZodType<T>
+  ): Promise<string | T> {
+    if (!this.model) {
+      throw new Error(
+        "LLM service is not configured. Please add your API key to the .env file."
+      );
+    }
+
+    const { text, output } = await generateText({
+      model: this.model,
+      system,
+      prompt,
+      maxRetries: 2,
+      output: schema ? Output.object({ schema }) : undefined,
+    });
+
+    return schema ? (output as T) : text;
   }
 
   clearMessages(): void {
