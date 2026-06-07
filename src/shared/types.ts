@@ -24,7 +24,7 @@ export interface AgentRequest {
 
 export interface AgentItem {
   id: string;
-  kind: "text" | "action";
+  kind: "text" | "action" | "reasoning";
   text?: string;
   tool?: ToolName;
   title?: string;

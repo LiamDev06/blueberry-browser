@@ -9,8 +9,8 @@ import {
   type StopCondition,
   type StreamTextResult,
 } from "ai";
-import { openai } from "@ai-sdk/openai";
-import { anthropic } from "@ai-sdk/anthropic";
+import { openai, type OpenAIResponsesProviderOptions } from "@ai-sdk/openai";
+import { anthropic, type AnthropicProviderOptions } from "@ai-sdk/anthropic";
 import * as dotenv from "dotenv";
 import { randomUUID } from "node:crypto";
 import { join } from "path";
@@ -35,6 +35,14 @@ type LLMProvider = "openai" | "anthropic";
 const DEFAULT_MODELS: Record<LLMProvider, string> = {
   openai: "gpt-5",
   anthropic: "claude-3-5-sonnet-20241022",
+};
+
+const REASONING_OPTIONS: {
+  anthropic: AnthropicProviderOptions;
+  openai: OpenAIResponsesProviderOptions;
+} = {
+  anthropic: { thinking: { type: "adaptive", display: "summarized" } },
+  openai: { reasoningSummary: "auto" },
 };
 
 const MAX_CONTEXT_LENGTH = 4000;
@@ -99,13 +107,15 @@ export class LLMClient {
     }
   }
 
-  private providerOptions() {
+  private providerOptions(enableReasoning = false) {
+    const reasoning = enableReasoning ? REASONING_OPTIONS[this.provider] : {};
+
     return {
       ...(this.provider === "anthropic" && {
-        anthropic: { cacheControl: { type: "ephemeral" } },
+        anthropic: { cacheControl: { type: "ephemeral" }, ...reasoning },
       }),
       ...(this.provider === "openai" && {
-        openai: { promptCacheKey: this.conversationId ?? "blueberry" },
+        openai: { promptCacheKey: this.conversationId ?? "blueberry", ...reasoning },
       }),
     };
   }
@@ -145,7 +155,7 @@ export class LLMClient {
       prompt,
       tools,
       stopWhen: stopConditions,
-      providerOptions: this.providerOptions(),
+      providerOptions: this.providerOptions(true),
     });
   }
 

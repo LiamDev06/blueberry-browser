@@ -151,6 +151,21 @@ export class BrowserAgent {
             }
             break;
           }
+          case "reasoning-start": {
+            run.items.push({ id: part.id, kind: "reasoning", text: "" });
+            this.emit();
+            break;
+          }
+          case "reasoning-delta": {
+            const item = run.items.find(
+              (item) => item.kind === "reasoning" && item.id === part.id
+            );
+            if (item) {
+              item.text = (item.text || "") + part.text;
+              this.emit();
+            }
+            break;
+          }
           case "error": {
             console.error("Agent stream error:", part.error);
             break;

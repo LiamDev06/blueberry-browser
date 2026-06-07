@@ -67,8 +67,13 @@ module.exports = {
         "spring-scale": "spring-scale 0.2s ease-in-out forwards",
         "star-spin": "star-spin 3s ease-in-out infinite",
         "fade-in": "fade-in 0.3s ease-out forwards",
+        shimmer: "shimmer 1.8s linear infinite",
       },
       keyframes: {
+        shimmer: {
+          "0%": { backgroundPosition: "200% 0" },
+          "100%": { backgroundPosition: "-200% 0" },
+        },
         "spring-scale": {
           "0%": { transform: "scale(0.95)" },
           "50%": { transform: "scale(1.02)" },
