@@ -2,6 +2,7 @@ import { BaseWindow, shell } from "electron";
 import { Tab } from "./Tab";
 import { TopBar } from "./TopBar";
 import { SideBar } from "./SideBar";
+import { LayoutHelper } from "./layout";
 
 export class Window {
   private _baseWindow: BaseWindow;
@@ -96,14 +97,13 @@ export class Window {
     // Add the tab's WebContentsView to the window
     this._baseWindow.contentView.addChildView(tab.view);
 
-    // Set the bounds to fill the window below the topbar and to the left of sidebar
-    const bounds = this._baseWindow.getBounds();
-    tab.view.setBounds({
-      x: 0,
-      y: 88, // Start below the topbar
-      width: bounds.width - 400, // Subtract sidebar width
-      height: bounds.height - 88, // Subtract topbar height
-    });
+    // Fill the content area: below the topbar, left of the sidebar (when shown).
+    tab.view.setBounds(
+      LayoutHelper.getContentBounds(
+        this._baseWindow.getBounds(),
+        this._sideBar.getIsVisible()
+      )
+    );
 
     // Store the tab
     this.tabsMap.set(tabId, tab);
@@ -231,18 +231,11 @@ export class Window {
 
   // Handle window resize to update tab bounds
   private updateTabBounds(): void {
-    const bounds = this._baseWindow.getBounds();
-    // Only subtract sidebar width if it's visible
-    const sidebarWidth = this._sideBar.getIsVisible() ? 400 : 0;
-
-    this.tabsMap.forEach((tab) => {
-      tab.view.setBounds({
-        x: 0,
-        y: 88, // Start below the topbar
-        width: bounds.width - sidebarWidth,
-        height: bounds.height - 88, // Subtract topbar height
-      });
-    });
+    const bounds = LayoutHelper.getContentBounds(
+      this._baseWindow.getBounds(),
+      this._sideBar.getIsVisible()
+    );
+    this.tabsMap.forEach((tab) => tab.view.setBounds(bounds));
   }
 
   // Public method to update all bounds when sidebar is toggled
