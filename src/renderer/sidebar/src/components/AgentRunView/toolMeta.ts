@@ -1,6 +1,6 @@
 import {
     MousePointerClick, Hand, Keyboard, Globe, ArrowLeft, ArrowRight,
-    MoveVertical, Sparkles, ListChecks
+    MoveVertical, Sparkles, ListChecks, Layers, Plus, ArrowLeftRight, X
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { ToolName } from '@shared/types'
@@ -19,5 +19,9 @@ export const TOOL_META: Record<ToolName, ToolMeta> = {
     forward: { icon: ArrowRight, runningLabel: 'Going forward…' },
     scroll: { icon: MoveVertical, runningLabel: 'Scrolling…' },
     remix: { icon: Sparkles, runningLabel: 'Remixing…' },
+    list_tabs: { icon: Layers, runningLabel: 'Listing tabs…' },
+    create_tab: { icon: Plus, runningLabel: 'Opening a tab…' },
+    switch_tab: { icon: ArrowLeftRight, runningLabel: 'Switching tabs…' },
+    close_tab: { icon: X, runningLabel: 'Closing a tab…' },
     done: { icon: ListChecks, runningLabel: 'Verifying against goal…' }
 }

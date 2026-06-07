@@ -9,17 +9,13 @@ const navigateInputSchema = z.object({
 
 type NavigateInput = z.infer<typeof navigateInputSchema>;
 
-function full(url: string): string {
-  return /^https?:\/\//.test(url) ? url : `https://${url}`;
-}
-
 export class NavigateTool extends BrowserTool<NavigateInput> {
   readonly name = "navigate";
   readonly description = "Navigate the active tab directly to a URL.";
   readonly inputSchema = navigateInputSchema;
 
   async execute(input: NavigateInput, ctx: ToolContext): Promise<ToolResult> {
-    const target = full(input.url);
+    const target = Utils.ensureUrlScheme(input.url);
     await ctx.tab.loadURL(target);
     return ok(`Opened ${Utils.hostnameFromUrl(target)}`);
   }

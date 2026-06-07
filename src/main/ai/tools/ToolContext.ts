@@ -1,4 +1,5 @@
 import type { Tab } from "../../Tab";
+import type { Window } from "../../Window";
 import type { AgentOverlay } from "../AgentOverlay";
 import type { ActionStatus, AgentRun, RunStatus, ToolName } from "@shared/types";
 import type { TaskGoal } from "../AgentGoal";
@@ -8,6 +9,7 @@ import type { ToolCall } from "./BrowserTool";
 
 export interface ToolDependencies {
   tab: Tab;
+  window: Window;
   run: AgentRun;
   goal: TaskGoal;
   llm: LLMClient;
@@ -24,8 +26,12 @@ export class ToolContext {
     private readonly call: ToolCall
   ) {}
 
+  // Resolve live so actions follow the agent after switch_tab/create_tab.
   get tab(): Tab {
-    return this.dependencies.tab;
+    return this.dependencies.window.activeTab ?? this.dependencies.tab;
+  }
+  get window(): Window {
+    return this.dependencies.window;
   }
   get run(): AgentRun {
     return this.dependencies.run;

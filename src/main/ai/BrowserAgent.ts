@@ -57,7 +57,8 @@ export class BrowserAgent {
       return;
     }
 
-    const tab = this.window?.activeTab ?? null;
+    const window = this.window;
+    const tab = window?.activeTab ?? null;
 
     const run: AgentRun = {
       id: request.messageId,
@@ -72,7 +73,7 @@ export class BrowserAgent {
     this.run = run;
     this.flush();
 
-    if (!tab) {
+    if (!tab || !window) {
       run.status = "error";
       run.summary = "There is no active tab to control.";
       this.flush();
@@ -95,6 +96,7 @@ export class BrowserAgent {
       const initial = await registry.observe(tab);
       const dependencies: ToolDependencies = {
         tab,
+        window,
         run,
         goal,
         llm: this.llm,
@@ -213,6 +215,7 @@ export class BrowserAgent {
       "- Only use element indices from the latest snapshot.",
       "- If a link/button is inside a dropdown or flyout, hover() its trigger first; its items then appear in the next snapshot.",
       "- If something isn't visible, scroll to reveal it, or navigate to a likely URL.",
+      "- You can work across multiple tabs: create_tab opens a new tab and switches to it, switch_tab moves you to another tab by its ID, list_tabs shows everything that's open, and close_tab closes one. Snapshots and actions always apply to the tab you're currently in. Use separate tabs to compare options side by side (e.g. open each candidate in its own tab), then switch between them to decide.",
       "- Don't repeat an action that changed nothing; try another way.",
       "- When you believe the goal's intent is met, call done() with a natural summary or the answer. A validator checks the page; if it isn't met it tells you what's missing and you keep going.",
       "- Only give up (done, explaining why) if the goal is genuinely impossible.",

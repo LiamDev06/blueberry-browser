@@ -3,6 +3,10 @@ export class Utils {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
+  static ensureUrlScheme(url: string): string {
+    return /^https?:\/\//.test(url) ? url : `https://${url}`;
+  }
+
   static hostnameFromUrl(url: string): string {
     try {
       return new URL(url).hostname.replace(/^www\./, "");

@@ -7,6 +7,10 @@ export type ToolName =
   | "forward"
   | "scroll"
   | "remix"
+  | "list_tabs"
+  | "create_tab"
+  | "switch_tab"
+  | "close_tab"
   | "done";
 
 export type ActionStatus = "running" | "done" | "error";
