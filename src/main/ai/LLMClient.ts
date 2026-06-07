@@ -12,6 +12,7 @@ import {
 import { openai } from "@ai-sdk/openai";
 import { anthropic } from "@ai-sdk/anthropic";
 import * as dotenv from "dotenv";
+import { randomUUID } from "node:crypto";
 import { join } from "path";
 import type { z } from "zod";
 import type { Window } from "../Window";
@@ -46,6 +47,8 @@ export class LLMClient {
   private readonly modelName: string;
   private readonly model: LanguageModel | null;
   private messages: ModelMessage[] = [];
+  private abortController: AbortController | null = null;
+  private conversationId: string | null = null;
 
   constructor(webContents: WebContents) {
     this.webContents = webContents;
@@ -96,6 +99,21 @@ export class LLMClient {
     }
   }
 
+  private providerOptions() {
+    return {
+      ...(this.provider === "anthropic" && {
+        anthropic: { cacheControl: { type: "ephemeral" } },
+      }),
+      ...(this.provider === "openai" && {
+        openai: { promptCacheKey: this.conversationId ?? "blueberry" },
+      }),
+    };
+  }
+
+  stopStream(): void {
+    this.abortController?.abort();
+  }
+
   private logInitializationStatus(): void {
     if (this.model) {
       console.log(
@@ -127,11 +145,16 @@ export class LLMClient {
       prompt,
       tools,
       stopWhen: stopConditions,
+      providerOptions: this.providerOptions(),
     });
   }
 
   async sendChatMessage(request: ChatRequest): Promise<void> {
     try {
+      if (this.messages.length === 0) {
+        this.conversationId = randomUUID();
+      }
+
       // Get screenshot from active tab if available
       let screenshot: string | null = null;
       if (this.window) {
@@ -183,7 +206,12 @@ export class LLMClient {
       }
 
       const messages = await this.prepareMessagesWithContext(request);
-      await this.streamResponse(messages, request.messageId);
+      this.abortController = new AbortController();
+      try {
+        await this.streamResponse(messages, request.messageId);
+      } finally {
+        this.abortController = null;
+      }
     } catch (error) {
       console.error("Error in LLM request:", error);
       this.handleStreamError(error, request.messageId);
@@ -213,6 +241,7 @@ export class LLMClient {
       prompt,
       maxRetries: 2,
       output: schema ? Output.object({ schema }) : undefined,
+      providerOptions: this.providerOptions(),
     });
 
     return schema ? (output as T) : text;
@@ -220,6 +249,7 @@ export class LLMClient {
 
   clearMessages(): void {
     this.messages = [];
+    this.conversationId = null;
     this.sendMessagesToRenderer();
   }
 
@@ -301,7 +331,8 @@ export class LLMClient {
         messages,
         temperature: DEFAULT_TEMPERATURE,
         maxRetries: 3,
-        abortSignal: undefined, // Could add abort controller for cancellation
+        abortSignal: this.abortController?.signal,
+        providerOptions: this.providerOptions(),
       });
 
       await this.processStream(result.textStream, messageId);
@@ -326,20 +357,26 @@ export class LLMClient {
     const messageIndex = this.messages.length;
     this.messages.push(assistantMessage);
 
-    for await (const chunk of textStream) {
-      accumulatedText += chunk;
+    try {
+      for await (const chunk of textStream) {
+        accumulatedText += chunk;
 
-      // Update assistant message content
-      this.messages[messageIndex] = {
-        role: "assistant",
-        content: accumulatedText,
-      };
-      this.sendMessagesToRenderer();
+        // Update assistant message content
+        this.messages[messageIndex] = {
+          role: "assistant",
+          content: accumulatedText,
+        };
+        this.sendMessagesToRenderer();
 
-      this.sendStreamChunk(messageId, {
-        content: chunk,
-        isComplete: false,
-      });
+        this.sendStreamChunk(messageId, {
+          content: chunk,
+          isComplete: false,
+        });
+      }
+    } catch (error) {
+      if (!(error instanceof Error && error.name === "AbortError")) {
+        throw error;
+      }
     }
 
     // Final update with complete content
