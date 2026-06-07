@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { readPageText } from "../../page/observer";
+import { readPageContent } from "../../page/observer";
 import { validateGoal } from "../AgentGoal";
 import { BrowserTool, ok, finish, type ToolResult } from "./BrowserTool";
 import type { ToolContext } from "./ToolContext";
@@ -22,9 +22,11 @@ export class DoneTool extends BrowserTool<DoneInput> {
     const { summary } = input;
     ctx.setStatus("validating");
 
+    const pageContent = await readPageContent(ctx.tab);
+
     const evidence = {
       snapshotText: await ctx.registry.observe(ctx.tab),
-      pageText: await readPageText(ctx.tab),
+      pageText: pageContent.text,
     };
     const verdict = await validateGoal(ctx.llm, ctx.goal, evidence, summary);
 

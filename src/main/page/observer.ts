@@ -1,5 +1,5 @@
 import type { Tab } from "../Tab";
-import type { PageSnapshot } from "./types";
+import type { PageContent, PageSnapshot } from "./types";
 
 const SETTLE_MS = 600;
 const LOAD_TIMEOUT_MS = 8000;
@@ -33,12 +33,18 @@ export function formatSnapshot(snapshot: PageSnapshot): string {
   ].join("\n");
 }
 
-export async function readPageText(tab: Tab): Promise<string> {
+export async function readPageContent(
+  tab: Tab,
+  maxChars: number = MAX_PAGE_TEXT
+): Promise<PageContent> {
+  let text = "";
   try {
-    return (await tab.getTabText()).replace(/\s+/g, " ").slice(0, MAX_PAGE_TEXT);
+    const tabText = await tab.getTabText();
+    text = tabText.replace(/\s+/g, " ").slice(0, maxChars);
   } catch {
-    return "";
+    // Leave text empty.
   }
+  return { title: tab.title, url: tab.url, text };
 }
 
 // Wait for the page to finish loading and settle before the next snapshot

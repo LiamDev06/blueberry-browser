@@ -7,6 +7,12 @@ export type ElementSnapshot = {
   inViewport: boolean;
 }
 
+export type PageContent = {
+  title: string;
+  url: string;
+  text: string;
+}
+
 export type PageSnapshot = {
   url: string;
   title: string;

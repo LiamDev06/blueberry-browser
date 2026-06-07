@@ -4,6 +4,7 @@ export type ToolName =
   | "type"
   | "navigate"
   | "scroll"
+  | "remix"
   | "done";
 
 export type ActionStatus = "running" | "done" | "error";

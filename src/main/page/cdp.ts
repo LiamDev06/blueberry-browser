@@ -28,6 +28,12 @@ export enum CdpCommand {
   DispatchMouseEvent = "Input.dispatchMouseEvent",
   // Dispatch a keyboard event (used for select-all and Enter).
   DispatchKeyEvent = "Input.dispatchKeyEvent",
+  // Enable the Page domain so the frame tree and document content are available.
+  EnablePage = "Page.enable",
+  // Fetch the frame tree — the main frame id is needed to replace its content.
+  GetFrameTree = "Page.getFrameTree",
+  // Replace a frame's entire document with a given HTML string.
+  SetDocumentContent = "Page.setDocumentContent",
 }
 
 export async function chromeDevtoolsProtocolSession(tab: Tab): Promise<Debugger> {

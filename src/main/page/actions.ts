@@ -237,6 +237,22 @@ export async function scroll(
   return { ok: true };
 }
 
+export async function replaceDocument(
+  tab: Tab,
+  html: string
+): Promise<ActionResult> {
+  const session = await chromeDevtoolsProtocolSession(tab);
+  await session.sendCommand(CdpCommand.EnablePage);
+
+  const { frameTree } = await session.sendCommand(CdpCommand.GetFrameTree);
+  await session.sendCommand(CdpCommand.SetDocumentContent, {
+    frameId: frameTree.frame.id,
+    html,
+  });
+
+  return { ok: true };
+}
+
 function quadBounds(quad: number[]): Bounds {
   const xCoordinates = [quad[0], quad[2], quad[4], quad[6]];
   const yCoordinates = [quad[1], quad[3], quad[5], quad[7]];
