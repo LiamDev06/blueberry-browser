@@ -5,8 +5,8 @@ import type { LLMClient } from "./LLMClient";
 import type { AgentRequest, AgentRun } from "@shared/types";
 import { generateGoal, type TaskGoal } from "./AgentGoal";
 import { ElementRegistry } from "../page/registry";
-import type { ToolDependencies } from "./tools/ToolContext";
-import { agentTools } from "./tools/ToolRegistry";
+import type { ToolDependencies } from "./ToolContext";
+import { agentTools } from "./ToolRegistry";
 
 const MAX_STEPS = 60;
 const EMIT_THROTTLE_MS = 40;
