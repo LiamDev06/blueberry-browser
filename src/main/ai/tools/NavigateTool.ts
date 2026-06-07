@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { BrowserTool, ok, type ToolResult } from "./BrowserTool";
 import type { ToolContext } from "./ToolContext";
-import { hostnameFromUrl } from "../../utils";
+import { Utils } from "../../utils";
 
 const navigateInputSchema = z.object({
   url: z.string().describe("The URL to navigate to."),
@@ -21,6 +21,6 @@ export class NavigateTool extends BrowserTool<NavigateInput> {
   async execute(input: NavigateInput, ctx: ToolContext): Promise<ToolResult> {
     const target = full(input.url);
     await ctx.tab.loadURL(target);
-    return ok(`Opened ${hostnameFromUrl(target)}`);
+    return ok(`Opened ${Utils.hostnameFromUrl(target)}`);
   }
 }

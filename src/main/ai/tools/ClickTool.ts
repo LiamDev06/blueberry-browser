@@ -3,7 +3,7 @@ import { locateElement, verifyPoint } from "../../page/actions";
 import { BrowserTool, ok, fail, type ToolResult } from "./BrowserTool";
 import type { ToolContext } from "./ToolContext";
 import { HOVER_MS } from "./constants";
-import { delay } from "../../utils";
+import { Utils } from "../../utils";
 
 const clickInputSchema = z.object({
   index: z.number().describe("Index of the element to click."),
@@ -40,7 +40,7 @@ export class ClickTool extends BrowserTool<ClickInput> {
 
     ctx.overlay?.moveCursor(loc.x, loc.y);
     ctx.tab.moveMouse(loc.x, loc.y);
-    await delay(HOVER_MS);
+    await Utils.delay(HOVER_MS);
 
     const check = await verifyPoint(ctx.tab, nodeId, loc.x, loc.y);
     if (!check.ok) {

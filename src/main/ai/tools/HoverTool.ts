@@ -3,7 +3,7 @@ import { locateElement } from "../../page/actions";
 import { BrowserTool, ok, fail, type ToolResult } from "./BrowserTool";
 import type { ToolContext } from "./ToolContext";
 import { HOVER_MS } from "./constants";
-import { delay } from "../../utils";
+import { Utils } from "../../utils";
 
 const hoverInputSchema = z.object({
   index: z.number().describe("Index of the element to hover."),
@@ -37,7 +37,7 @@ export class HoverTool extends BrowserTool<HoverInput> {
 
     ctx.overlay?.moveCursor(loc.x, loc.y);
     ctx.tab.moveMouse(loc.x, loc.y);
-    await delay(HOVER_MS);
+    await Utils.delay(HOVER_MS);
     return ok(
       `Hovered ${label}`,
       "Hovering. Any menu it opened is now in this snapshot"
