@@ -6,6 +6,8 @@ import { ClickTool } from "./ClickTool";
 import { HoverTool } from "./HoverTool";
 import { TypeTool } from "./TypeTool";
 import { NavigateTool } from "./NavigateTool";
+import { BackTool } from "./BackTool";
+import { ForwardTool } from "./ForwardTool";
 import { ScrollTool } from "./ScrollTool";
 import { RemixTool } from "./RemixTool";
 import { DoneTool } from "./DoneTool";
@@ -52,6 +54,8 @@ export const agentTools = new ToolRegistry([
   new HoverTool(),
   new TypeTool(),
   new NavigateTool(),
+  new BackTool(),
+  new ForwardTool(),
   new ScrollTool(),
   new RemixTool(),
   new DoneTool(),

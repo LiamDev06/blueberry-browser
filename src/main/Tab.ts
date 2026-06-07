@@ -112,16 +112,20 @@ export class Tab {
     return this.webContentsView.webContents.loadURL(url);
   }
 
-  goBack(): void {
+  goBack(): boolean {
     if (this.webContentsView.webContents.navigationHistory.canGoBack()) {
       this.webContentsView.webContents.navigationHistory.goBack();
+      return true;
     }
+    return false;
   }
 
-  goForward(): void {
+  goForward(): boolean {
     if (this.webContentsView.webContents.navigationHistory.canGoForward()) {
       this.webContentsView.webContents.navigationHistory.goForward();
+      return true;
     }
+    return false;
   }
 
   reload(): void {

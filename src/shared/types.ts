@@ -3,6 +3,8 @@ export type ToolName =
   | "hover"
   | "type"
   | "navigate"
+  | "back"
+  | "forward"
   | "scroll"
   | "remix"
   | "done";
