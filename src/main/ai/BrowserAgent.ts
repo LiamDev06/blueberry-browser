@@ -19,8 +19,8 @@ export class BrowserAgent {
   private aborted = false;
 
   private run: AgentRun | null = null;
-  private lastEmit = 0;
-  private emitTimer: NodeJS.Timeout | null = null;
+  private flushTimer: NodeJS.Timeout | null = null;
+  private dirty = false;
 
   constructor(webContents: WebContents, llm: LLMClient) {
     this.webContents = webContents;
@@ -43,33 +43,13 @@ export class BrowserAgent {
     return this.window?.agentOverlay ?? null;
   }
 
-  private emit(force = false): void {
-    if (!this.run) {
+  // Push the latest run snapshot to the renderer immediately
+  private flush(): void {
+    this.dirty = false;
+    if (!this.run || this.webContents.isDestroyed()) {
       return;
     }
-
-    const send = (): void => {
-      this.lastEmit = Date.now();
-      if (this.emitTimer) {
-        clearTimeout(this.emitTimer);
-        this.emitTimer = null;
-      }
-
-      if (!this.webContents.isDestroyed()) {
-        this.webContents.send("agent-activity", this.run);
-      }
-    };
-    
-    if (force) {
-      return send();
-    }
-    
-    const since = Date.now() - this.lastEmit;
-    if (since >= EMIT_THROTTLE_MS) {
-      send();
-    } else if (!this.emitTimer) {
-      this.emitTimer = setTimeout(send, EMIT_THROTTLE_MS - since);
-    }
+    this.webContents.send("agent-activity", this.run);
   }
 
   async runTask(request: AgentRequest): Promise<void> {
@@ -90,12 +70,12 @@ export class BrowserAgent {
     };
 
     this.run = run;
-    this.emit(true);
+    this.flush();
 
     if (!tab) {
       run.status = "error";
       run.summary = "There is no active tab to control.";
-      this.emit(true);
+      this.flush();
       return;
     }
 
@@ -107,7 +87,7 @@ export class BrowserAgent {
       run.goal = goal.goal;
       run.criteria = goal.criteria.map((criterion) => ({ text: criterion, met: null }));
       run.status = "running";
-      this.emit(true);
+      this.flush();
 
       this.overlay?.show(goal.goal, this.window?.sidebar.getIsVisible() ?? true);
 
@@ -121,7 +101,7 @@ export class BrowserAgent {
         overlay: this.overlay,
         registry,
         isAborted: () => this.aborted,
-        emit: () => this.emit(true),
+        emit: () => this.flush(),
       };
       
       const result = this.llm.streamWithTools(
@@ -134,11 +114,17 @@ export class BrowserAgent {
         ]
       );
 
+      this.flushTimer = setInterval(() => {
+        if (this.dirty) {
+          this.flush();
+        }
+      }, EMIT_THROTTLE_MS);
+
       for await (const part of result.fullStream) {
         switch (part.type) {
           case "text-start": {
             run.items.push({ id: part.id, kind: "text", text: "" });
-            this.emit();
+            this.dirty = true;
             break;
           }
           case "text-delta": {
@@ -147,13 +133,13 @@ export class BrowserAgent {
             );
             if (item) {
               item.text = (item.text || "") + part.text;
-              this.emit();
+              this.dirty = true;
             }
             break;
           }
           case "reasoning-start": {
             run.items.push({ id: part.id, kind: "reasoning", text: "" });
-            this.emit();
+            this.dirty = true;
             break;
           }
           case "reasoning-delta": {
@@ -162,7 +148,7 @@ export class BrowserAgent {
             );
             if (item) {
               item.text = (item.text || "") + part.text;
-              this.emit();
+              this.dirty = true;
             }
             break;
           }
@@ -174,14 +160,18 @@ export class BrowserAgent {
       }
 
       this.finalize(run);
-      this.emit(true);
     } catch (error) {
       console.error("Browser agent error:", error);
       run.status = "error";
       run.summary =
         error instanceof Error ? error.message : "Something went wrong.";
-      this.emit(true);
     } finally {
+      if (this.flushTimer) {
+        clearInterval(this.flushTimer);
+        this.flushTimer = null;
+      }
+      
+      this.flush(); // guarantee the final frame
       this.overlay?.hide();
       this.running = false;
     }
