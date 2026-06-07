@@ -173,6 +173,17 @@ export class EventManager {
     ipcMain.handle("sidebar-get-messages", () => {
       return this.mainWindow.sidebar.client.getMessages();
     });
+
+    // Run a browser-use agent task
+    ipcMain.handle("sidebar-run-agent", async (_, request) => {
+      await this.mainWindow.sidebar.agent.runTask(request);
+    });
+
+    // Stop the currently running agent task
+    ipcMain.handle("sidebar-stop-agent", () => {
+      this.mainWindow.sidebar.agent.stop();
+      return true;
+    });
   }
 
   private handlePageContentEvents(): void {

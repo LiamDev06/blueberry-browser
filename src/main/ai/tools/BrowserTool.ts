@@ -1,17 +1,10 @@
 import type { z } from "zod";
 import type { ToolContext } from "./ToolContext";
+import type { ToolName } from "@shared/types";
 
 export type ToolCall = {
   toolCallId: string;
 }
-
-export type ToolName =
-  | "click"
-  | "hover"
-  | "type"
-  | "navigate"
-  | "scroll"
-  | "done";
 
 export type ToolResult = {
   status: "done" | "error";

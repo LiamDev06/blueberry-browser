@@ -2,6 +2,7 @@ import { BaseWindow, shell } from "electron";
 import { Tab } from "./Tab";
 import { TopBar } from "./TopBar";
 import { SideBar } from "./SideBar";
+import { AgentOverlay } from "./ai/AgentOverlay";
 import { LayoutHelper } from "./layout";
 
 export class Window {
@@ -11,6 +12,7 @@ export class Window {
   private tabCounter: number = 0;
   private _topBar: TopBar;
   private _sideBar: SideBar;
+  private _agentOverlay: AgentOverlay;
 
   constructor() {
     // Create the browser window.
@@ -28,9 +30,11 @@ export class Window {
 
     this._topBar = new TopBar(this._baseWindow);
     this._sideBar = new SideBar(this._baseWindow);
+    this._agentOverlay = new AgentOverlay(this._baseWindow);
 
-    // Set the window reference on the LLM client to avoid circular dependency
+    // Set the window reference on the LLM client and agent to avoid circular dependency
     this._sideBar.client.setWindow(this);
+    this._sideBar.agent.setWindow(this);
 
     // Create the first tab
     this.createTab();
@@ -40,6 +44,7 @@ export class Window {
       this.updateTabBounds();
       this._topBar.updateBounds();
       this._sideBar.updateBounds();
+      this._agentOverlay.updateBounds(this._sideBar.getIsVisible());
       // Notify renderer of resize through active tab
       const bounds = this._baseWindow.getBounds();
       if (this.activeTab) {
@@ -242,11 +247,17 @@ export class Window {
   updateAllBounds(): void {
     this.updateTabBounds();
     this._sideBar.updateBounds();
+    this._agentOverlay.updateBounds(this._sideBar.getIsVisible());
   }
 
   // Getter for sidebar to access from main process
   get sidebar(): SideBar {
     return this._sideBar;
+  }
+
+  // Getter for the agent's on-screen overlay
+  get agentOverlay(): AgentOverlay {
+    return this._agentOverlay;
   }
 
   // Getter for topBar to access from main process

@@ -89,6 +89,16 @@ export class Tab {
     return await this.webContentsView.webContents.executeJavaScript(code);
   }
 
+  moveMouse(x: number, y: number): void {
+    this.webContentsView.webContents.sendInputEvent({ type: "mouseMove", x, y });
+  }
+
+  clickAt(x: number, y: number): void {
+    const webContents = this.webContentsView.webContents;
+    webContents.sendInputEvent({ type: "mouseDown", x, y, button: "left", clickCount: 1 });
+    webContents.sendInputEvent({ type: "mouseUp", x, y, button: "left", clickCount: 1 });
+  }
+
   async getTabHtml(): Promise<string> {
     return await this.runJs("return document.documentElement.outerHTML");
   }

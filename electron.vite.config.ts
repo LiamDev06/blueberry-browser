@@ -5,9 +5,19 @@ import react from "@vitejs/plugin-react";
 export default defineConfig({
   main: {
     plugins: [externalizeDepsPlugin()],
+    resolve: {
+      alias: {
+        "@shared": resolve("src/shared"),
+      },
+    },
   },
   preload: {
     plugins: [externalizeDepsPlugin()],
+    resolve: {
+      alias: {
+        "@shared": resolve("src/shared"),
+      },
+    },
     build: {
       rollupOptions: {
         input: {
@@ -33,6 +43,7 @@ export default defineConfig({
       alias: {
         "@renderer": resolve("src/renderer/src"),
         "@common": resolve("src/renderer/common"),
+        "@shared": resolve("src/shared"),
       },
     },
     plugins: [react()],

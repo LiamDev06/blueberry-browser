@@ -27,6 +27,20 @@ const sidebarAPI = {
 
   getMessages: () => electronAPI.ipcRenderer.invoke("sidebar-get-messages"),
 
+  // Browser-use agent
+  runAgentTask: (request: { message: string; messageId: string }) =>
+    electronAPI.ipcRenderer.invoke("sidebar-run-agent", request),
+
+  stopAgent: () => electronAPI.ipcRenderer.invoke("sidebar-stop-agent"),
+
+  onAgentActivity: (callback: (run: any) => void) => {
+    electronAPI.ipcRenderer.on("agent-activity", (_, run) => callback(run));
+  },
+
+  removeAgentActivityListener: () => {
+    electronAPI.ipcRenderer.removeAllListeners("agent-activity");
+  },
+
   onChatResponse: (callback: (data: ChatResponse) => void) => {
     electronAPI.ipcRenderer.on("chat-response", (_, data) => callback(data));
   },

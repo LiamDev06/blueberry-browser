@@ -1,8 +1,9 @@
 import { ElectronAPI } from "@electron-toolkit/preload";
+import type { AgentRequest, AgentRun } from "@shared/types";
 
 interface ChatRequest {
   message: string;
-  context: {
+  context?: {
     url: string | null;
     content: string | null;
     text: string | null;
@@ -26,8 +27,18 @@ interface TabInfo {
 interface SidebarAPI {
   // Chat functionality
   sendChatMessage: (request: ChatRequest) => Promise<void>;
+  clearChat: () => Promise<boolean>;
+  getMessages: () => Promise<unknown[]>;
   onChatResponse: (callback: (data: ChatResponse) => void) => void;
+  onMessagesUpdated: (callback: (messages: unknown[]) => void) => void;
   removeChatResponseListener: () => void;
+  removeMessagesUpdatedListener: () => void;
+
+  // Browser-use agent
+  runAgentTask: (request: AgentRequest) => Promise<void>;
+  stopAgent: () => Promise<boolean>;
+  onAgentActivity: (callback: (run: AgentRun) => void) => void;
+  removeAgentActivityListener: () => void;
 
   // Page content access
   getPageContent: () => Promise<string | null>;
@@ -44,4 +55,3 @@ declare global {
     sidebarAPI: SidebarAPI;
   }
 }
-

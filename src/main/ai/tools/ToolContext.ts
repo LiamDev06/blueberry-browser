@@ -1,10 +1,10 @@
 import type { Tab } from "../../Tab";
 import type { AgentOverlay } from "../AgentOverlay";
-import type { ActionStatus, AgentRun, RunStatus } from "../AgentTypes";
+import type { ActionStatus, AgentRun, RunStatus, ToolName } from "@shared/types";
 import type { TaskGoal } from "../AgentGoal";
 import type { ElementRegistry } from "../../page/registry";
 import type { LLMClient } from "../LLMClient";
-import type { ToolCall, ToolName } from "./BrowserTool";
+import type { ToolCall } from "./BrowserTool";
 
 export interface ToolDependencies {
   tab: Tab;
@@ -53,7 +53,7 @@ export class ToolContext {
 
   startAction(): void {
     this.run.items.push({
-      id: `action-${this.call.toolCallId}`,
+      id: this.call.toolCallId,
       kind: "action",
       tool: this.tool,
       status: "running",
@@ -63,7 +63,7 @@ export class ToolContext {
 
   finishAction(status: ActionStatus, title?: string): void {
     const item = this.run.items.find(
-      (item) => item.id === `action-${this.call.toolCallId}`
+      (item) => item.kind === "action" && item.id === this.call.toolCallId
     );
     if (!item) {
       return;

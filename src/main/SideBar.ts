@@ -1,13 +1,15 @@
 import { is } from "@electron-toolkit/utils";
 import { BaseWindow, WebContentsView } from "electron";
 import { join } from "path";
-import { LLMClient } from "./LLMClient";
 import { LayoutHelper } from "./layout";
+import { LLMClient } from "./ai/LLMClient";
+import { BrowserAgent } from "./ai/BrowserAgent";
 
 export class SideBar {
   private webContentsView: WebContentsView;
   private baseWindow: BaseWindow;
   private llmClient: LLMClient;
+  private browserAgent: BrowserAgent;
   private isVisible: boolean = true;
 
   constructor(baseWindow: BaseWindow) {
@@ -16,8 +18,11 @@ export class SideBar {
     baseWindow.contentView.addChildView(this.webContentsView);
     this.setupBounds();
 
-    // Initialize LLM client
     this.llmClient = new LLMClient(this.webContentsView.webContents);
+    this.browserAgent = new BrowserAgent(
+      this.webContentsView.webContents,
+      this.llmClient
+    );
   }
 
   private createWebContentsView(): WebContentsView {
@@ -75,6 +80,10 @@ export class SideBar {
 
   get client(): LLMClient {
     return this.llmClient;
+  }
+
+  get agent(): BrowserAgent {
+    return this.browserAgent;
   }
 
   show(): void {
