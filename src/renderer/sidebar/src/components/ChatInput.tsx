@@ -1,12 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { ArrowUp } from 'lucide-react'
+import { ArrowUp, Bot } from 'lucide-react'
 import { cn } from '@common/lib/utils'
+import { Button } from '@common/components/Button'
+import { useChat } from '../contexts/ChatContext'
 
 // Chat Input Component with pill design
 export const ChatInput: React.FC<{
     onSend: (message: string) => void
     disabled: boolean
 }> = ({ onSend, disabled }) => {
+    const { agentMode, setAgentMode } = useChat()
     const [value, setValue] = useState('')
     const [isFocused, setIsFocused] = useState(false)
     const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -56,8 +59,8 @@ export const ChatInput: React.FC<{
                             onFocus={() => setIsFocused(true)}
                             onBlur={() => setIsFocused(false)}
                             onKeyDown={handleKeyDown}
-                            placeholder="Send a message..."
-                            className="w-full resize-none outline-none bg-transparent 
+                            placeholder={agentMode ? "Tell the agent what to do..." : "Send a message..."}
+                            className="w-full resize-none outline-none bg-transparent
                                      text-foreground placeholder:text-muted-foreground
                                      min-h-[24px] max-h-[200px]"
                             rows={1}
@@ -69,6 +72,20 @@ export const ChatInput: React.FC<{
 
             {/* Send Button */}
             <div className="w-full flex items-center gap-1.5 px-1 mt-2 mb-1">
+                <Button
+                    variant="ghost"
+                    onClick={() => setAgentMode(!agentMode)}
+                    title={agentMode ? "Agent mode on — messages control the browser" : "Enable agent mode"}
+                    className={cn(
+                        "h-9 px-3 rounded-full gap-1.5 font-medium border transition-all duration-200",
+                        agentMode
+                            ? "bg-primary/10 border-primary/30 text-primary hover:bg-primary/10"
+                            : "bg-transparent border-border text-muted-foreground hover:text-foreground hover:bg-transparent"
+                    )}
+                >
+                    <Bot className="size-4" />
+                    Agent
+                </Button>
                 <div className="flex-1" />
                 <button
                     onClick={handleSubmit}

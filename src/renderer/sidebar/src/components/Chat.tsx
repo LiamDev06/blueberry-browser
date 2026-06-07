@@ -3,13 +3,20 @@ import { Plus } from 'lucide-react'
 import { useChat } from '../contexts/ChatContext'
 import { Button } from '@common/components/Button'
 import { ChatInput } from './ChatInput'
+import { AgentRunningBar } from './AgentRunningBar'
+import { AgentRunView } from './AgentRunView'
 import { useAutoScroll } from './useAutoScroll'
 import { ConversationTurn, ConversationTurnComponent } from './ConversationTurnComponent'
 
 // Main Chat Component
 export const Chat: React.FC = () => {
-    const { messages, isLoading, sendMessage, clearChat } = useChat()
-    const scrollRef = useAutoScroll(messages)
+    const { messages, isLoading, agentMode, agentRuns, sendMessage, clearChat, stopAgent } = useChat()
+    const scrollRef = useAutoScroll(
+        messages.length + agentRuns.reduce((n, r) => n + r.items.length, 0)
+    )
+
+    const isAgentRunning = agentMode && isLoading
+    const isEmpty = messages.length === 0 && agentRuns.length === 0
 
     // Group messages into conversation turns
     const conversationTurns: ConversationTurn[] = []
@@ -38,7 +45,7 @@ export const Chat: React.FC = () => {
             <div className="flex-1 overflow-y-auto">
                 <div className="h-8 max-w-3xl mx-auto px-4">
                     {/* New Chat Button - Floating */}
-                    {messages.length > 0 && (
+                    {!isEmpty && (
                         <Button
                             onClick={clearChat}
                             title="Start new chat"
@@ -52,7 +59,7 @@ export const Chat: React.FC = () => {
 
                 <div className="pb-4 relative max-w-3xl mx-auto px-4">
 
-                    {messages.length === 0 ? (
+                    {isEmpty ? (
                         // Empty State
                         <div className="flex items-center justify-center h-full min-h-[400px]">
                             <div className="text-center animate-fade-in max-w-md mx-auto gap-2 flex flex-col">
@@ -64,7 +71,6 @@ export const Chat: React.FC = () => {
                         </div>
                     ) : (
                         <>
-
                             {/* Render conversation turns */}
                             {conversationTurns.map((turn, index) => (
                                 <ConversationTurnComponent
@@ -76,6 +82,10 @@ export const Chat: React.FC = () => {
                                     }
                                 />
                             ))}
+
+                            {agentRuns.map((run) => (
+                                <AgentRunView key={run.id} run={run} />
+                            ))}
                         </>
                     )}
 
@@ -86,7 +96,11 @@ export const Chat: React.FC = () => {
 
             {/* Input Area */}
             <div className="p-4">
-                <ChatInput onSend={sendMessage} disabled={isLoading} />
+                {isAgentRunning ? (
+                    <AgentRunningBar onStop={stopAgent} />
+                ) : (
+                    <ChatInput onSend={sendMessage} disabled={isLoading} />
+                )}
             </div>
         </div>
     )

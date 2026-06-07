@@ -1,13 +1,12 @@
 import { useRef, useLayoutEffect } from 'react'
-import { Message } from './types'
 
 // Auto-scroll hook
-export const useAutoScroll = (messages: Message[]) => {
+export const useAutoScroll = (count: number) => {
     const scrollRef = useRef<HTMLDivElement>(null)
     const prevCount = useRef(0)
 
     useLayoutEffect(() => {
-        if (messages.length > prevCount.current) {
+        if (count > prevCount.current) {
             setTimeout(() => {
                 scrollRef.current?.scrollIntoView({
                     behavior: 'smooth',
@@ -15,8 +14,8 @@ export const useAutoScroll = (messages: Message[]) => {
                 })
             }, 100)
         }
-        prevCount.current = messages.length
-    }, [messages.length])
+        prevCount.current = count
+    }, [count])
 
     return scrollRef
 }
