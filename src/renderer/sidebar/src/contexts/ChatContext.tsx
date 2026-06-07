@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react'
+import type { AgentRun } from '@shared/types'
 
 interface Message {
     id: string
@@ -11,6 +12,12 @@ interface Message {
 interface ChatContextType {
     messages: Message[]
     isLoading: boolean
+
+    // Agent mode
+    agentMode: boolean
+    setAgentMode: (on: boolean) => void
+    stopAgent: () => void
+    agentRuns: AgentRun[]
 
     // Chat actions
     sendMessage: (content: string) => Promise<void>
@@ -36,13 +43,16 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [messages, setMessages] = useState<Message[]>([])
     const [isLoading, setIsLoading] = useState(false)
 
+    const [agentMode, setAgentMode] = useState(false)
+    const [agentRuns, setAgentRuns] = useState<AgentRun[]>([])
+
     // Load initial messages from main process
     useEffect(() => {
         const loadMessages = async () => {
             try {
                 const storedMessages = await window.sidebarAPI.getMessages()
                 if (storedMessages && storedMessages.length > 0) {
-                    // Convert CoreMessage format to our frontend Message format
+                    // Convert ModelMessage format to our frontend Message format
                     const convertedMessages = storedMessages.map((msg: any, index: number) => ({
                         id: `msg-${index}`,
                         role: msg.role,
@@ -67,11 +77,17 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
         try {
             const messageId = Date.now().toString()
 
-            // Send message to main process (which will handle context)
-            await window.sidebarAPI.sendChatMessage({
-                message: content,
-                messageId: messageId
-            })
+            if (agentMode) {
+                await window.sidebarAPI.runAgentTask({
+                    message: content,
+                    messageId: messageId
+                })
+            } else {
+                await window.sidebarAPI.sendChatMessage({
+                    message: content,
+                    messageId: messageId
+                })
+            }
 
             // Messages will be updated via the chat-messages-updated event
         } catch (error) {
@@ -79,12 +95,17 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
         } finally {
             setIsLoading(false)
         }
+    }, [agentMode])
+
+    const stopAgent = useCallback(() => {
+        window.sidebarAPI.stopAgent()
     }, [])
 
     const clearChat = useCallback(async () => {
         try {
             await window.sidebarAPI.clearChat()
             setMessages([])
+            setAgentRuns([])
         } catch (error) {
             console.error('Failed to clear chat:', error)
         }
@@ -128,7 +149,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         // Listen for message updates from main process
         const handleMessagesUpdated = (updatedMessages: any[]) => {
-            // Convert CoreMessage format to our frontend Message format
+            // Convert ModelMessage format to our frontend Message format
             const convertedMessages = updatedMessages.map((msg: any, index: number) => ({
                 id: `msg-${index}`,
                 role: msg.role,
@@ -141,18 +162,35 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setMessages(convertedMessages)
         }
 
+        // Upsert structured agent-run activity by id (latest state wins).
+        const handleAgentActivity = (incoming: AgentRun) => {
+            setAgentRuns((previousRuns) =>
+                previousRuns.some((existingRun) => existingRun.id === incoming.id)
+                    ? previousRuns.map((existingRun) =>
+                          existingRun.id === incoming.id ? incoming : existingRun
+                      )
+                    : [...previousRuns, incoming]
+            )
+        }
+
         window.sidebarAPI.onChatResponse(handleChatResponse)
         window.sidebarAPI.onMessagesUpdated(handleMessagesUpdated)
+        window.sidebarAPI.onAgentActivity(handleAgentActivity)
 
         return () => {
             window.sidebarAPI.removeChatResponseListener()
             window.sidebarAPI.removeMessagesUpdatedListener()
+            window.sidebarAPI.removeAgentActivityListener()
         }
     }, [])
 
     const value: ChatContextType = {
         messages,
         isLoading,
+        agentMode,
+        setAgentMode,
+        stopAgent,
+        agentRuns,
         sendMessage,
         clearChat,
         getPageContent,
