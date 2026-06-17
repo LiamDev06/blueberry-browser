@@ -22,11 +22,23 @@ export class DoneTool extends BrowserTool<DoneInput> {
     const { summary } = input;
     ctx.setStatus("validating");
 
-    const pageContent = await readPageContent(ctx.tab);
+    const activeId = ctx.tab.id;
+    const pages = await Promise.all(
+      ctx.window.allTabs.map(async (tab) => {
+        const content = await readPageContent(tab);
+        return {
+          id: tab.id,
+          active: tab.id === activeId,
+          title: content.title,
+          url: content.url,
+          text: content.text,
+        };
+      })
+    );
 
     const evidence = {
       snapshotText: await ctx.registry.observe(ctx.tab),
-      pageText: pageContent.text,
+      pages,
     };
     const verdict = await validateGoal(ctx.llm, ctx.goal, evidence, summary);
 

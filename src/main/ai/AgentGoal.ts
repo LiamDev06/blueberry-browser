@@ -59,9 +59,17 @@ export async function generateGoal(
   }
 }
 
+type PageEvidence = {
+  id: string;
+  active: boolean;
+  title: string;
+  url: string;
+  text: string;
+};
+
 type Evidence = {
   snapshotText: string;
-  pageText: string;
+  pages: PageEvidence[];
 }
 
 export async function validateGoal(
@@ -76,15 +84,24 @@ export async function validateGoal(
 
   function constructSystemPrompt(): string {
     return [
-      "You are a fair validator for a browser agent. Judge whether the CURRENT page satisfies the goal's INTENT.",
+      "You are a fair validator for a browser agent. Judge whether the open pages satisfy the goal's INTENT.",
       "Judge SEMANTICALLY, by page content and the goal's meaning — NOT by literal URL/string matching.",
+      "The agent can work across multiple tabs. Evidence from EVERY open tab is provided below, not just the active one. A criterion is met if ANY open tab satisfies it — do NOT require all evidence to live on a single page. For a task that spans pages (e.g. comparing two products), it is complete when the relevant pages are each open in their own tab and together cover the goal.",
       "Give reasonable benefit of the doubt: a relevant sub-page, an equivalent page, or a page whose content clearly serves the goal MEETS the criterion. For example, if the goal is to be on the Codex page, openai.com/codex satisfies it even if the goal mentioned openai.com.",
-      "Only mark a criterion not met if the page clearly does NOT serve the user's intent.",
+      "Only mark a criterion not met if NO open tab serves the user's intent for it.",
       "Return the SAME criteria in the SAME order you are given. Set complete=true when the overall intent is achieved.",
     ].join("\n");
   }
 
   function constructUserPrompt(): string {
+    const pageSections = evidence.pages.flatMap((page) => [
+      `# Tab ${page.id}${page.active ? " (active)" : ""}`,
+      `Title: ${page.title}`,
+      `URL: ${page.url}`,
+      `Text (truncated): ${page.text || "(none)"}`,
+      "",
+    ]);
+
     return [
       `Goal (the user's intent): ${goal.goal}`,
       "",
@@ -93,11 +110,10 @@ export async function validateGoal(
       "",
       `The agent says: "${summary}"`,
       "",
-      `--- Current page evidence ---`,
+      `--- Open pages (${evidence.pages.length} tab${evidence.pages.length === 1 ? "" : "s"}) ---`,
+      ...pageSections,
+      `--- Interactive elements on the active tab ---`,
       evidence.snapshotText,
-      "",
-      `Page text (truncated):`,
-      evidence.pageText || "(none)",
     ].join("\n");
   }
 
