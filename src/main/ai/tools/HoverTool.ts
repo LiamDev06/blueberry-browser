@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { locateElement } from "../../page/actions";
-import { BrowserTool, ok, fail, type ToolResult } from "../BrowserTool";
+import { BrowserTool, look, fail, type ToolResult } from "../BrowserTool";
 import type { ToolContext } from "../ToolContext";
 import { HOVER_MS } from "./constants";
 import { Utils } from "../../utils";
@@ -38,7 +38,7 @@ export class HoverTool extends BrowserTool<HoverInput> {
     ctx.overlay?.moveCursor(loc.x, loc.y);
     ctx.tab.moveMouse(loc.x, loc.y);
     await Utils.delay(HOVER_MS);
-    return ok(
+    return look(
       `Hovered ${label}`,
       "Hovering. Any menu it opened is now in this snapshot"
     );

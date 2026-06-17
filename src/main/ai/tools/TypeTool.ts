@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { locateElement, typeIntoElement } from "../../page/actions";
-import { BrowserTool, ok, fail, type ToolResult } from "../BrowserTool";
+import { BrowserTool, look, fail, type ToolResult } from "../BrowserTool";
 import type { ToolContext } from "../ToolContext";
 
 const typeInputSchema = z.object({
@@ -38,6 +38,6 @@ export class TypeTool extends BrowserTool<TypeInput> {
       return fail(`Couldn't type into [${index}]`, `Could not type: ${result.error}`);
     }
     
-    return ok(`Typed “${text}”${submit ? " and pressed Enter" : ""}`);
+    return look(`Typed “${text}”${submit ? " and pressed Enter" : ""}`);
   }
 }

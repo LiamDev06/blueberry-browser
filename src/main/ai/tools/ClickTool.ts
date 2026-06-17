@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { locateElement, verifyPoint } from "../../page/actions";
-import { BrowserTool, ok, fail, type ToolResult } from "../BrowserTool";
+import { BrowserTool, look, fail, type ToolResult } from "../BrowserTool";
 import type { ToolContext } from "../ToolContext";
 import { HOVER_MS } from "./constants";
 import { Utils } from "../../utils";
@@ -51,6 +51,6 @@ export class ClickTool extends BrowserTool<ClickInput> {
     }
 
     ctx.tab.clickAt(loc.x, loc.y);
-    return ok(`Clicked ${description || check.target}`);
+    return look(`Clicked ${description || check.target}`);
   }
 }

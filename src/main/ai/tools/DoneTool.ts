@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { readPageContent } from "../../page/observer";
 import { validateGoal } from "../AgentGoal";
-import { BrowserTool, ok, finish, type ToolResult } from "../BrowserTool";
+import { BrowserTool, look, reply, type ToolResult } from "../BrowserTool";
 import type { ToolContext } from "../ToolContext";
 
 const doneInputSchema = z.object({
@@ -54,7 +54,7 @@ export class DoneTool extends BrowserTool<DoneInput> {
       ctx.run.criteria = ctx.run.criteria.map((criterion) => ({ text: criterion.text, met: true }));
       ctx.run.summary = summary;
       ctx.setStatus("done");
-      return finish("Goal reached", "Validated: the goal is met. Task complete.");
+      return reply("Goal reached", "Validated: the goal is met. Task complete.");
     }
 
     ctx.setStatus("running");
@@ -63,7 +63,7 @@ export class DoneTool extends BrowserTool<DoneInput> {
       .filter((criterion) => !criterion.met)
       .map((criterion) => `- ${criterion.criterion}`)
       .join("\n");
-    return ok(
+    return look(
       "Not done yet — continuing",
       [
         `The goal is NOT fully met yet, so keep going.`,

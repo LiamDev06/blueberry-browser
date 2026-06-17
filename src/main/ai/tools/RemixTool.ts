@@ -1,6 +1,6 @@
 import { z } from "zod";
 import sanitizeHtml from "sanitize-html";
-import { BrowserTool, ok, type ToolResult } from "../BrowserTool";
+import { BrowserTool, look, type ToolResult } from "../BrowserTool";
 import type { ToolContext } from "../ToolContext";
 import { replaceDocument } from "../../page/actions";
 import { readPageContent } from "../../page/observer";
@@ -37,7 +37,7 @@ export class RemixTool extends BrowserTool<RemixInput> {
     );
     await replaceDocument(ctx.tab, buildRemixDocument(fragment));
 
-    return ok(
+    return look(
       `Remixed "${page.title || "page"}"`,
       `Rewrote the page in place per: ${input.instruction}`
     );

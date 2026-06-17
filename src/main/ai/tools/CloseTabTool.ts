@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { BrowserTool, ok, fail, type ToolResult } from "../BrowserTool";
+import { BrowserTool, look, fail, type ToolResult } from "../BrowserTool";
 import type { ToolContext } from "../ToolContext";
 
 const closeTabInputSchema = z.object({
@@ -30,6 +30,6 @@ export class CloseTabTool extends BrowserTool<CloseTabInput> {
     }
     
     ctx.window.closeTab(input.tabId);
-    return ok(`Closed ${input.tabId}`, `Now on ${ctx.tab.id}.`);
+    return look(`Closed ${input.tabId}`, `Now on ${ctx.tab.id}.`);
   }
 }

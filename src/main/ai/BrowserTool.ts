@@ -19,8 +19,8 @@ export type ToolResult = {
   image?: ToolImage;
 }
 
-// Succeeded: mark the step done and follow with a fresh snapshot (+ optional note and image)
-export function ok(title: string, note?: string, image?: ToolImage): ToolResult {
+// Acted on the page: mark the step done and let the model look at a fresh snapshot (+ optional note and image)
+export function look(title: string, note?: string, image?: ToolImage): ToolResult {
   return { status: "done", title, reobserve: true, message: note, image };
 }
 
@@ -29,8 +29,8 @@ export function fail(title: string, note?: string): ToolResult {
   return { status: "error", title, reobserve: true, message: note };
 }
 
-// Terminal: mark the step done and feed the model exactly this, with no snapshot
-export function finish(title: string, message: string): ToolResult {
+// Self-contained: mark the step done and feed the model exactly this reply, with no snapshot
+export function reply(title: string, message: string): ToolResult {
   return { status: "done", title, reobserve: false, message };
 }
 

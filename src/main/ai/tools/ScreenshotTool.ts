@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { BrowserTool, ok, type ToolResult } from "../BrowserTool";
+import { BrowserTool, look, type ToolResult } from "../BrowserTool";
 import type { ToolContext } from "../ToolContext";
 
 const MAX_WIDTH = 1024;
@@ -21,7 +21,7 @@ export class ScreenshotTool extends BrowserTool<ScreenshotInput> {
       image = image.resize({ width: MAX_WIDTH });
     }
 
-    return ok("Took a screenshot", "Here's what the page looks like right now:", {
+    return look("Took a screenshot", "Here's what the page looks like right now:", {
       data: image.toPNG().toString("base64"),
       mediaType: "image/png",
     });

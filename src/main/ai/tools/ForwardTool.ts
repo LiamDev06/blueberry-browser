@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { BrowserTool, ok, fail, type ToolResult } from "../BrowserTool";
+import { BrowserTool, look, fail, type ToolResult } from "../BrowserTool";
 import type { ToolContext } from "../ToolContext";
 
 const forwardInputSchema = z.object({});
@@ -16,6 +16,6 @@ export class ForwardTool extends BrowserTool<ForwardInput> {
     if (!ctx.tab.goForward()) {
       return fail("Can't go forward", "There is no next page in history.");
     }
-    return ok("Went forward");
+    return look("Went forward");
   }
 }

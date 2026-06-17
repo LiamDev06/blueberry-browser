@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { scroll } from "../../page/actions";
-import { BrowserTool, ok, type ToolResult } from "../BrowserTool";
+import { BrowserTool, look, type ToolResult } from "../BrowserTool";
 import type { ToolContext } from "../ToolContext";
 
 const scrollInputSchema = z.object({
@@ -17,6 +17,6 @@ export class ScrollTool extends BrowserTool<ScrollInput> {
 
   async execute(input: ScrollInput, ctx: ToolContext): Promise<ToolResult> {
     await scroll(ctx.tab, input.direction);
-    return ok(`Scrolled ${input.direction}`);
+    return look(`Scrolled ${input.direction}`);
   }
 }

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { BrowserTool, ok, fail, type ToolResult } from "../BrowserTool";
+import { BrowserTool, look, fail, type ToolResult } from "../BrowserTool";
 import type { ToolContext } from "../ToolContext";
 
 const backInputSchema = z.object({});
@@ -16,6 +16,6 @@ export class BackTool extends BrowserTool<BackInput> {
     if (!ctx.tab.goBack()) {
       return fail("Can't go back", "There is no previous page in history.");
     }
-    return ok("Went back");
+    return look("Went back");
   }
 }

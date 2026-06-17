@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { BrowserTool, ok, type ToolResult } from "../BrowserTool";
+import { BrowserTool, look, type ToolResult } from "../BrowserTool";
 import type { ToolContext } from "../ToolContext";
 import { Utils } from "../../utils";
 
@@ -25,6 +25,6 @@ export class CreateTabTool extends BrowserTool<CreateTabInput> {
     ctx.window.switchActiveTab(tab.id);
     
     const where = target ? ` at ${Utils.hostnameFromUrl(target)}` : "";
-    return ok(`Opened a new tab${where}`, `Created and switched to ${tab.id}.`);
+    return look(`Opened a new tab${where}`, `Created and switched to ${tab.id}.`);
   }
 }

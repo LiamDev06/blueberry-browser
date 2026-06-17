@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { BrowserTool, ok, fail, type ToolResult } from "../BrowserTool";
+import { BrowserTool, look, fail, type ToolResult } from "../BrowserTool";
 import type { ToolContext } from "../ToolContext";
 
 const switchTabInputSchema = z.object({
@@ -18,7 +18,7 @@ export class SwitchTabTool extends BrowserTool<SwitchTabInput> {
 
   async execute(input: SwitchTabInput, ctx: ToolContext): Promise<ToolResult> {
     if (ctx.tab.id === input.tabId) {
-      return ok(`Already on ${input.tabId}`);
+      return look(`Already on ${input.tabId}`);
     }
     
     if (!ctx.window.switchActiveTab(input.tabId)) {
@@ -28,6 +28,6 @@ export class SwitchTabTool extends BrowserTool<SwitchTabInput> {
       );
     }
     
-    return ok(`Switched to ${input.tabId}`);
+    return look(`Switched to ${input.tabId}`);
   }
 }

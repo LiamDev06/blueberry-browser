@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { BrowserTool, ok, type ToolResult } from "../BrowserTool";
+import { BrowserTool, look, type ToolResult } from "../BrowserTool";
 import type { ToolContext } from "../ToolContext";
 import { Utils } from "../../utils";
 
@@ -17,6 +17,6 @@ export class NavigateTool extends BrowserTool<NavigateInput> {
   async execute(input: NavigateInput, ctx: ToolContext): Promise<ToolResult> {
     const target = Utils.ensureUrlScheme(input.url);
     await ctx.tab.loadURL(target);
-    return ok(`Opened ${Utils.hostnameFromUrl(target)}`);
+    return look(`Opened ${Utils.hostnameFromUrl(target)}`);
   }
 }

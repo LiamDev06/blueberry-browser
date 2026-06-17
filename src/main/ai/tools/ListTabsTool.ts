@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { BrowserTool, finish, type ToolResult } from "../BrowserTool";
+import { BrowserTool, reply, type ToolResult } from "../BrowserTool";
 import type { ToolContext } from "../ToolContext";
 
 const listTabsInputSchema = z.object({});
@@ -19,7 +19,7 @@ export class ListTabsTool extends BrowserTool<ListTabsInput> {
       return `- ${tab.id}${marker}: ${tab.title || "Untitled"} — ${tab.url}`;
     });
     
-    return finish(
+    return reply(
       `${lines.length} open tab${lines.length === 1 ? "" : "s"}`,
       `Open tabs:\n${lines.join("\n")}`
     );
