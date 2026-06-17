@@ -55,14 +55,6 @@ export class Window {
       }
     });
 
-    // Handle external link opening
-    this.tabsMap.forEach((tab) => {
-      tab.webContents.setWindowOpenHandler((details) => {
-        shell.openExternal(details.url);
-        return { action: "deny" };
-      });
-    });
-
     this.setupEventListeners();
   }
 
@@ -98,6 +90,18 @@ export class Window {
   createTab(url?: string): Tab {
     const tabId = `tab-${++this.tabCounter}`;
     const tab = new Tab(tabId, url);
+
+    tab.webContents.setWindowOpenHandler((details) => {
+      if (/^https?:\/\//i.test(details.url)) {
+        const newTab = this.createTab(details.url);
+        if (details.disposition !== "background-tab") {
+          this.switchActiveTab(newTab.id);
+        }
+      } else {
+        shell.openExternal(details.url);
+      }
+      return { action: "deny" };
+    });
 
     // Add the tab's WebContentsView to the window
     this._baseWindow.contentView.addChildView(tab.view);
