@@ -6,6 +6,7 @@ import { LayoutHelper } from "../layout";
 export class AgentOverlay {
   private readonly baseWindow: BaseWindow;
   private readonly view: WebContentsView;
+  private visible = false;
 
   constructor(baseWindow: BaseWindow) {
     this.baseWindow = baseWindow;
@@ -44,6 +45,17 @@ export class AgentOverlay {
     );
   }
 
+  private restack(): void {
+    this.baseWindow.contentView.removeChildView(this.view);
+    this.baseWindow.contentView.addChildView(this.view);
+  }
+
+  raise(): void {
+    if (this.visible) {
+      this.restack();
+    }
+  }
+
   private send(channel: string, payload?: unknown): void {
     if (!this.view.webContents.isDestroyed()) {
       this.view.webContents.send(channel, payload);
@@ -51,11 +63,9 @@ export class AgentOverlay {
   }
 
   show(goal: string, sidebarVisible: boolean): void {
+    this.visible = true;
     this.updateBounds(sidebarVisible);
-    
-    // Re-stack on top in case tabs were added after construction.
-    this.baseWindow.contentView.removeChildView(this.view);
-    this.baseWindow.contentView.addChildView(this.view);
+    this.restack();
     this.view.setVisible(true);
     this.send("overlay:start", goal);
   }
@@ -65,6 +75,7 @@ export class AgentOverlay {
   }
 
   hide(): void {
+    this.visible = false;
     this.view.setVisible(false);
   }
 }

@@ -106,6 +106,9 @@ export class Window {
     // Add the tab's WebContentsView to the window
     this._baseWindow.contentView.addChildView(tab.view);
 
+    // addChildView stacks on top, so re-raise the overlay above the new tab.
+    this._agentOverlay.raise();
+
     // Fill the content area: below the topbar, left of the sidebar (when shown).
     tab.view.setBounds(
       LayoutHelper.getContentBounds(
@@ -177,6 +180,7 @@ export class Window {
     // Show the new active tab
     tab.show();
     this.activeTabId = tabId;
+    this._agentOverlay.raise();
 
     // Update the window title to match the tab title
     this._baseWindow.setTitle(tab.title || "Blueberry Browser");
