@@ -17,6 +17,7 @@ export class BrowserAgent {
   private window: Window | null = null;
   private running = false;
   private aborted = false;
+  private abortController: AbortController | null = null;
 
   private run: AgentRun | null = null;
   private flushTimer: NodeJS.Timeout | null = null;
@@ -37,6 +38,7 @@ export class BrowserAgent {
 
   stop(): void {
     this.aborted = true;
+    this.abortController?.abort();
   }
 
   private get overlay() {
@@ -82,6 +84,8 @@ export class BrowserAgent {
 
     this.running = true;
     this.aborted = false;
+    this.abortController = new AbortController();
+    const signal = this.abortController.signal;
 
     try {
       const goal = await generateGoal(this.llm, request.message, tab.url);
@@ -113,7 +117,8 @@ export class BrowserAgent {
         [
           stepCountIs(MAX_STEPS),
           () => this.aborted || run.status === "done",
-        ]
+        ],
+        signal
       );
 
       this.flushTimer = setInterval(() => {
@@ -169,10 +174,14 @@ export class BrowserAgent {
 
       this.finalize(run);
     } catch (error) {
-      console.error("Browser agent error:", error);
-      run.status = "error";
-      run.summary =
-        error instanceof Error ? error.message : "Something went wrong.";
+      if (this.aborted) {
+        this.finalize(run);
+      } else {
+        console.error("Browser agent error:", error);
+        run.status = "error";
+        run.summary =
+          error instanceof Error ? error.message : "Something went wrong.";
+      }
     } finally {
       if (this.flushTimer) {
         clearInterval(this.flushTimer);

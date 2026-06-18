@@ -143,7 +143,8 @@ export class LLMClient {
     system: string,
     prompt: string,
     tools: ToolSet,
-    stopConditions: StopCondition<ToolSet>[]
+    stopConditions: StopCondition<ToolSet>[],
+    signal?: AbortSignal
   ): StreamTextResult<ToolSet, never> {
     if (!this.model) {
       throw new Error("LLM is not configured.");
@@ -155,6 +156,7 @@ export class LLMClient {
       prompt,
       tools,
       stopWhen: stopConditions,
+      abortSignal: signal,
       providerOptions: this.providerOptions(true),
     });
   }
