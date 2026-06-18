@@ -27,9 +27,10 @@ const TabItem: React.FC<TabItemProps> = ({
         "relative flex items-center h-8 pl-2 pr-1.5 select-none rounded-md",
         "text-primary group/tab transition-all duration-200 cursor-pointer",
         "app-region-no-drag", // Make tabs clickable
+        "border border-transparent", // reserve border space so active state doesn't shift layout
         isActive
-            ? "bg-background shadow-tab dark:bg-secondary dark:shadow-none"
-            : "bg-transparent hover:bg-muted/50 dark:hover:bg-muted/30",
+            ? "bg-background !border-border/80 dark:bg-[#383838] dark:!border-white/10"
+            : "hover:bg-foreground/[0.05] dark:hover:bg-white/[0.06]",
         isPinned ? "w-8 !px-0 justify-center" : ""
     )
 
