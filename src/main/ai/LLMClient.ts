@@ -33,7 +33,7 @@ interface StreamChunk {
 type LLMProvider = "openai" | "anthropic";
 
 const DEFAULT_MODELS: Record<LLMProvider, string> = {
-  openai: "gpt-5",
+  openai: "gpt-5.5",
   anthropic: "claude-3-5-sonnet-20241022",
 };
 
