@@ -15,7 +15,7 @@ type WriteMemoryInput = z.infer<typeof writeMemoryInputSchema>;
 export class WriteMemoryTool extends BrowserTool<WriteMemoryInput> {
   readonly name = "write_memory";
   readonly description =
-    "Save a durable preference or fact the user reveals about themselves so it can inform future tasks. Use for lasting context, not one-off task details.";
+    "Save anything durable you learn about the user — stated outright OR inferred from the choices they make — that would make a future task better: how they like things, who they are, recurring context, decisions they make repeatedly (e.g. always picks the cheapest option, prefers window seats, wants prices in GBP). When in doubt, save it: a slightly-too-eager note is cheap, a forgotten preference is not. Skip only genuinely one-off task mechanics.";
   readonly inputSchema = writeMemoryInputSchema;
 
   async execute(input: WriteMemoryInput, ctx: ToolContext): Promise<ToolResult> {
