@@ -1,19 +1,6 @@
 import { contextBridge } from "electron";
 import { electronAPI } from "@electron-toolkit/preload";
-
-interface Point {
-  x: number;
-  y: number;
-}
-
-interface RemixState {
-  active: boolean;
-}
-
-interface HudPatch {
-  goal?: string;
-  remix?: RemixState;
-}
+import type { HudPatch, Point } from "@shared/overlay";
 
 const overlayAPI = {
   // Patch the HUD presentation: the goal label and/or the remixing effect

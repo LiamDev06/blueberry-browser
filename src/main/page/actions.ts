@@ -1,6 +1,5 @@
 import type { Tab } from "../Tab";
 import { chromeDevtoolsProtocolSession, CdpCommand } from "./cdp";
-import { REMIX_MAIN_ATTR, REMIX_REGION_ATTR } from "./observer";
 import { type ElementSnapshot, type PageSnapshot } from "./types";
 
 const MAX_ELEMENTS = 75;
@@ -287,50 +286,6 @@ export async function scroll(
   });
   
   return { ok: true };
-}
-
-export type RemixTarget =
-  | { kind: "main" }
-  | { kind: "region"; id: number };
-
-export async function applyRemix(
-  tab: Tab,
-  target: RemixTarget,
-  html: string
-): Promise<ActionResult> {
-  const selector =
-    target.kind === "main"
-      ? `[${REMIX_MAIN_ATTR}]`
-      : `[${REMIX_REGION_ATTR}="${target.id}"]`;
-
-  const result = await tab.runJs(applyRemixScript(selector, html));
-  if (result && result.ok) {
-    return { ok: true };
-  }
-  return { ok: false, error: "The remix target is no longer on the page." };
-}
-
-function applyRemixScript(selector: string, html: string): string {
-  return `(() => {
-    const el = document.querySelector(${JSON.stringify(selector)});
-    if (!el) return { ok: false };
-    el.innerHTML = ${JSON.stringify(html)};
-
-    if (document.body && !document.getElementById("blueberry-remix-badge")) {
-      const badge = document.createElement("div");
-      badge.id = "blueberry-remix-badge";
-      badge.textContent = "✨ Remixed";
-      badge.setAttribute(
-        "style",
-        "position:fixed;bottom:16px;right:16px;z-index:2147483647;" +
-          "font:600 12px -apple-system,system-ui,sans-serif;letter-spacing:.04em;" +
-          "text-transform:uppercase;padding:6px 11px;border-radius:999px;" +
-          "background:rgba(107,78,255,.14);color:#6b4eff;pointer-events:none;"
-      );
-      document.body.appendChild(badge);
-    }
-    return { ok: true };
-  })()`;
 }
 
 export async function replaceDocument(

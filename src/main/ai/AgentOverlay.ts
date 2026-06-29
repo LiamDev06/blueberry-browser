@@ -2,6 +2,7 @@ import { is } from "@electron-toolkit/utils";
 import { BaseWindow, WebContentsView } from "electron";
 import { join } from "path";
 import { LayoutHelper } from "../layout";
+import type { HudPatch, Point } from "@shared/overlay";
 
 export class AgentOverlay {
   private readonly baseWindow: BaseWindow;
@@ -62,24 +63,29 @@ export class AgentOverlay {
     }
   }
 
+  private sendHud(patch: HudPatch): void {
+    this.send("overlay:hud", patch);
+  }
+
   show(goal: string, sidebarVisible: boolean): void {
     this.visible = true;
     this.updateBounds(sidebarVisible);
     this.restack();
     this.view.setVisible(true);
-    this.send("overlay:hud", { goal, remix: { active: false } });
+    this.sendHud({ goal, remix: { active: false } });
   }
 
   moveCursor(x: number, y: number): void {
-    this.send("overlay:move", { x, y });
+    const point: Point = { x, y };
+    this.send("overlay:move", point);
   }
 
   startRemix(): void {
-    this.send("overlay:hud", { remix: { active: true } });
+    this.sendHud({ remix: { active: true } });
   }
 
   endRemix(): void {
-    this.send("overlay:hud", { remix: { active: false } });
+    this.sendHud({ remix: { active: false } });
   }
 
   hide(): void {

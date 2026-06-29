@@ -1,18 +1,5 @@
 import { useEffect, useState } from 'react'
-
-export type Point = {
-    x: number
-    y: number
-}
-
-export type RemixState = {
-    active: boolean
-}
-
-export type HudPatch = {
-    goal?: string
-    remix?: RemixState
-}
+import type { HudPatch, Point, RemixState } from '@shared/overlay'
 
 export type HudState = {
     goal: string
