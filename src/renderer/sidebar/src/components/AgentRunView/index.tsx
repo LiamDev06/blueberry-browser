@@ -1,6 +1,7 @@
 import type { AgentRun } from '@shared/types'
 import { UserMessage } from '../UserMessage'
 import { ActionChip } from './ActionChip'
+import { QuestionCard } from './QuestionCard'
 import { NarrationText } from './NarrationText'
 import { ReasoningBlock } from './ReasoningBlock'
 import { LiveStatus } from './LiveStatus'
@@ -21,6 +22,7 @@ export function AgentRunView({ run }: AgentRunViewProps) {
     const showLiveStatus =
         !finished &&
         run.status !== 'planning' &&
+        run.status !== 'waiting' &&
         !lastIsActiveReasoning &&
         !lastIsRunningAction
 
@@ -33,7 +35,13 @@ export function AgentRunView({ run }: AgentRunViewProps) {
                 )}
                 <div className="flex flex-col gap-2.5">
                     {run.items
-                        .filter((item) => item.kind === 'action' || item.text)
+                        .filter((item) =>
+                            item.kind === 'question'
+                                ? true
+                                : item.kind === 'action'
+                                    ? item.tool !== 'ask_user'
+                                    : !!item.text
+                        )
                         .map((item) =>
                             item.kind === 'text' ? (
                                 <NarrationText key={item.id} text={item.text!} />
@@ -43,6 +51,8 @@ export function AgentRunView({ run }: AgentRunViewProps) {
                                     text={item.text!}
                                     active={!finished && item.id === lastItem?.id}
                                 />
+                            ) : item.kind === 'question' ? (
+                                <QuestionCard key={item.id} item={item} />
                             ) : (
                                 <ActionChip key={item.id} item={item} />
                             )

@@ -15,6 +15,7 @@ import { ListTabsTool } from "./tools/ListTabsTool";
 import { CreateTabTool } from "./tools/CreateTabTool";
 import { SwitchTabTool } from "./tools/SwitchTabTool";
 import { CloseTabTool } from "./tools/CloseTabTool";
+import { AskUserTool } from "./tools/AskUserTool";
 import { DoneTool } from "./tools/DoneTool";
 
 export class ToolRegistry {
@@ -85,5 +86,6 @@ export const agentTools = new ToolRegistry([
   new CreateTabTool(),
   new SwitchTabTool(),
   new CloseTabTool(),
+  new AskUserTool(),
   new DoneTool(),
 ]);
