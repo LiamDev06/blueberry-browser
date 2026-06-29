@@ -13,10 +13,11 @@ export const StreamingText: React.FC<{ content: string }> = ({ content }) => {
             }, 10)
             return () => clearTimeout(timer)
         }
+        return undefined
     }, [content, currentIndex])
 
     return (
-        <div className="whitespace-pre-wrap text-foreground">
+        <div className="whitespace-pre-wrap break-words [overflow-wrap:anywhere] text-sm leading-relaxed text-foreground">
             {displayedContent}
             {currentIndex < content.length && (
                 <span className="inline-block w-2 h-5 bg-primary/60 dark:bg-primary/40 ml-0.5 animate-pulse" />
