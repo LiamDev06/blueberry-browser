@@ -2,7 +2,7 @@ import { WebContents } from "electron";
 import { stepCountIs } from "ai";
 import type { Window } from "../Window";
 import type { LLMClient } from "./LLMClient";
-import type { AgentRequest, AgentRun } from "@shared/types";
+import type { AgentRequest, AgentRun, RunStatus } from "@shared/types";
 import { generateGoal, type TaskGoal } from "./AgentGoal";
 import { ElementRegistry } from "../page/registry";
 import type { ToolDependencies } from "./ToolContext";
@@ -23,6 +23,8 @@ export class BrowserAgent {
   private flushTimer: NodeJS.Timeout | null = null;
   private dirty = false;
 
+  private pendingAnswers = new Map<string, (answer: string) => void>();
+
   constructor(webContents: WebContents, llm: LLMClient) {
     this.webContents = webContents;
     this.llm = llm;
@@ -38,7 +40,34 @@ export class BrowserAgent {
 
   stop(): void {
     this.aborted = true;
+    for (const resolve of this.pendingAnswers.values()) {
+      resolve("");
+    }
+    this.pendingAnswers.clear();
     this.abortController?.abort();
+  }
+
+  private awaitAnswer(id: string): Promise<string> {
+    return new Promise<string>((resolve) => {
+      this.pendingAnswers.set(id, resolve);
+    });
+  }
+
+  answerQuestion(id: string, answer: string): void {
+    const resolve = this.pendingAnswers.get(id);
+    if (!resolve) {
+      return;
+    }
+    this.pendingAnswers.delete(id);
+
+    const item = this.run?.items.find(
+      (item) => item.kind === "question" && item.id === id
+    );
+    if (item) {
+      item.answer = answer;
+    }
+    this.setStatus("running");
+    resolve(answer);
   }
 
   private get overlay() {
@@ -52,6 +81,14 @@ export class BrowserAgent {
       return;
     }
     this.webContents.send("agent-activity", this.run);
+  }
+
+  private setStatus(status: RunStatus): void {
+    if (!this.run) {
+      return;
+    }
+    this.run.status = status;
+    this.flush();
   }
 
   async runTask(request: AgentRequest): Promise<void> {
@@ -76,9 +113,8 @@ export class BrowserAgent {
     this.flush();
 
     if (!tab || !window) {
-      run.status = "error";
       run.summary = "There is no active tab to control.";
-      this.flush();
+      this.setStatus("error");
       return;
     }
 
@@ -91,8 +127,7 @@ export class BrowserAgent {
       const goal = await generateGoal(this.llm, request.message, tab.url);
       run.goal = goal.goal;
       run.criteria = goal.criteria.map((criterion) => ({ text: criterion, met: null }));
-      run.status = "running";
-      this.flush();
+      this.setStatus("running");
 
       this.overlay?.show(goal.goal, this.window?.sidebar.getIsVisible() ?? true);
 
@@ -108,6 +143,7 @@ export class BrowserAgent {
         registry,
         isAborted: () => this.aborted,
         emit: () => this.flush(),
+        awaitAnswer: (id) => this.awaitAnswer(id),
       };
       
       const result = this.llm.streamWithTools(
@@ -178,9 +214,9 @@ export class BrowserAgent {
         this.finalize(run);
       } else {
         console.error("Browser agent error:", error);
-        run.status = "error";
         run.summary =
           error instanceof Error ? error.message : "Something went wrong.";
+        this.setStatus("error");
       }
     } finally {
       if (this.flushTimer) {
@@ -196,15 +232,15 @@ export class BrowserAgent {
 
   private finalize(run: AgentRun): void {
     if (this.aborted) {
-      run.status = "stopped";
       if (!run.summary) {
         run.summary = "Stopped. Control handed back to you.";
       }
+      this.setStatus("stopped");
     } else if (run.status !== "done") {
-      run.status = "done";
       if (!run.summary) {
         run.summary = "I reached the step limit before fully completing this.";
       }
+      this.setStatus("done");
     }
   }
 
@@ -234,6 +270,7 @@ export class BrowserAgent {
       "- The snapshot only lists elements, not how the page looks. When appearance matters — layout, images, charts, colors, or confirming something rendered the way you expect — take a screenshot to see the page for yourself.",
       "- You can work across multiple tabs: create_tab opens a new tab and switches to it, switch_tab moves you to another tab by its ID, list_tabs shows everything that's open, and close_tab closes one. Snapshots and actions always apply to the tab you're currently in. Use separate tabs to compare options side by side (e.g. open each candidate in its own tab), then switch between them to decide.",
       "- Don't repeat an action that changed nothing; try another way.",
+      "- When a choice would materially change the outcome — the request is ambiguous, there are several reasonable options, or you'd otherwise be guessing at something that could waste effort — call ask_user() with a clear question and, when there are obvious choices, a few options (the user can still type their own). Ask at genuine decision points rather than pushing ahead on an assumption; but don't ask about things you can settle yourself by looking at the page. Execution pauses until they reply.",
       "- When you believe the goal's intent is met, call done() with a natural summary or the answer. A validator checks the page; if it isn't met it tells you what's missing and you keep going.",
       "- Only give up (done, explaining why) if the goal is genuinely impossible.",
     ].join("\n");

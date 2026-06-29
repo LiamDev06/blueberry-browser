@@ -184,6 +184,14 @@ export class EventManager {
       this.mainWindow.sidebar.agent.stop();
       return true;
     });
+
+    ipcMain.handle(
+      "sidebar-answer-question",
+      (_, payload: { id: string; answer: string }) => {
+        this.mainWindow.sidebar.agent.answerQuestion(payload.id, payload.answer);
+        return true;
+      }
+    );
   }
 
   private handlePageContentEvents(): void {

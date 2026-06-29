@@ -33,6 +33,9 @@ const sidebarAPI = {
 
   stopAgent: () => electronAPI.ipcRenderer.invoke("sidebar-stop-agent"),
 
+  answerAgentQuestion: (payload: { id: string; answer: string }) =>
+    electronAPI.ipcRenderer.invoke("sidebar-answer-question", payload),
+
   onAgentActivity: (callback: (run: any) => void) => {
     electronAPI.ipcRenderer.on("agent-activity", (_, run) => callback(run));
   },

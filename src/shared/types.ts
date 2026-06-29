@@ -12,6 +12,7 @@ export type ToolName =
   | "create_tab"
   | "switch_tab"
   | "close_tab"
+  | "ask_user"
   | "done";
 
 export type ActionStatus = "running" | "done" | "error";
@@ -20,6 +21,7 @@ export type RunStatus =
   | "planning"
   | "running"
   | "validating"
+  | "waiting"
   | "done"
   | "stopped"
   | "error";
@@ -31,11 +33,14 @@ export interface AgentRequest {
 
 export interface AgentItem {
   id: string;
-  kind: "text" | "action" | "reasoning";
+  kind: "text" | "action" | "reasoning" | "question";
   text?: string;
   tool?: ToolName;
   title?: string;
   status?: ActionStatus;
+  question?: string;
+  options?: string[];
+  answer?: string;
 }
 
 export interface AgentCriterion {
