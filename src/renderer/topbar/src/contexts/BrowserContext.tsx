@@ -28,6 +28,7 @@ interface BrowserContextType {
     // Tab actions
     takeScreenshot: (tabId: string) => Promise<string | null>
     runJavaScript: (tabId: string, code: string) => Promise<any>
+    downloadPdf: () => Promise<void>
 }
 
 const BrowserContext = createContext<BrowserContextType | null>(null)
@@ -157,6 +158,18 @@ export const BrowserProvider: React.FC<{ children: React.ReactNode }> = ({ child
         }
     }, [])
 
+    const downloadPdf = useCallback(async () => {
+        if (!activeTab) {
+            return
+        }
+
+        try {
+            await window.topBarAPI.downloadPdf(activeTab.id)
+        } catch (error) {
+            console.error('Failed to download PDF:', error)
+        }
+    }, [activeTab])
+
     // Initialize tabs on mount
     useEffect(() => {
         refreshTabs()
@@ -181,7 +194,8 @@ export const BrowserProvider: React.FC<{ children: React.ReactNode }> = ({ child
         goForward,
         reload,
         takeScreenshot,
-        runJavaScript
+        runJavaScript,
+        downloadPdf
     }
 
     return (

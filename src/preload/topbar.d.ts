@@ -26,6 +26,7 @@ interface TopBarAPI {
   // Tab actions
   tabScreenshot: (tabId: string) => Promise<string | null>;
   tabRunJs: (tabId: string, code: string) => Promise<any>;
+  downloadPdf: (tabId: string) => Promise<boolean>;
 
   // Sidebar
   toggleSidebar: () => Promise<void>;

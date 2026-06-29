@@ -94,6 +94,12 @@ export class Tab {
     return await this.webContentsView.webContents.capturePage();
   }
 
+  async printToPdf(): Promise<Buffer> {
+    return await this.webContentsView.webContents.printToPDF({
+      printBackground: true,
+    });
+  }
+
   async runJs(code: string): Promise<any> {
     return await this.webContentsView.webContents.executeJavaScript(code);
   }

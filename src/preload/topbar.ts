@@ -27,6 +27,8 @@ const topBarAPI = {
     electronAPI.ipcRenderer.invoke("tab-screenshot", tabId),
   tabRunJs: (tabId: string, code: string) =>
     electronAPI.ipcRenderer.invoke("tab-run-js", tabId, code),
+  downloadPdf: (tabId: string) =>
+    electronAPI.ipcRenderer.invoke("tab-download-pdf", tabId),
 
   // Sidebar
   toggleSidebar: () =>
