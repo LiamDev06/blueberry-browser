@@ -14,7 +14,6 @@ export class Window {
   private _topBar: TopBar;
   private _sideBar: SideBar;
   private _agentOverlay: AgentOverlay;
-  private freshlyRemixedUrl: string | null = null;
 
   constructor() {
     // Create the browser window.
@@ -110,7 +109,6 @@ export class Window {
 
     tab.webContents.on("did-navigate", () => {
       if (this.activeTabId === tab.id) {
-        this.freshlyRemixedUrl = null;
         this.evaluateRemixPrompt();
       }
     });
@@ -194,7 +192,8 @@ export class Window {
     // Update the window title to match the tab title
     this._baseWindow.setTitle(tab.title || "Blueberry Browser");
 
-    this.evaluateRemixPrompt();
+    // Clear any prompt from the previous tab; it only re-appears on navigation.
+    this._sideBar.sendRemixPrompt(null);
 
     return true;
   }
@@ -283,22 +282,9 @@ export class Window {
     this._sideBar.sendRemixPrompt(null);
   }
 
-  onAgentRunEnded(): void {
-    this.evaluateRemixPrompt();
-  }
-
-  markFreshlyRemixed(url: string): void {
-    this.freshlyRemixedUrl = url;
-  }
-
   private evaluateRemixPrompt(): void {
     const tab = this.activeTab;
     if (!tab || this._sideBar.agent.isRunning) {
-      this._sideBar.sendRemixPrompt(null);
-      return;
-    }
-
-    if (tab.url === this.freshlyRemixedUrl) {
       this._sideBar.sendRemixPrompt(null);
       return;
     }

@@ -97,7 +97,6 @@ export class RemixTool extends BrowserTool<RemixInput> {
 
       const label = plan.title?.trim() || input.instruction;
       ctx.remixStore.add(ctx.tab.url, ctx.tab.title, label, resolved);
-      ctx.window.markFreshlyRemixed(ctx.tab.url);
 
       return look(
         `Remixed ${ctx.tab.title || "page"}`,

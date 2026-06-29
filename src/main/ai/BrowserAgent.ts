@@ -241,7 +241,6 @@ export class BrowserAgent {
       this.flush(); // guarantee the final frame
       this.overlay?.hide();
       this.running = false;
-      this.window?.onAgentRunEnded();
     }
   }
 
