@@ -1,8 +1,6 @@
-async (maxResultChars) => {
+async (run, maxResultChars) => {
   try {
-    const value = await (async () => {
-      /* __USER_CODE__ */
-    })();
+    const value = await run();
 
     let json;
     try {

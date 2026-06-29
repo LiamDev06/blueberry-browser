@@ -60,8 +60,8 @@ export class RunJsTool extends BrowserTool<RunJsInput> {
 }
 
 function buildScript(code: string): string {
-  const wrapper = runJsScript.replace("/* __USER_CODE__ */", () => code);
-  return `(${wrapper})(${MAX_RESULT_CHARS})`;
+  const run = `async () => {\n${code}\n}`;
+  return `(${runJsScript})(${run}, ${MAX_RESULT_CHARS})`;
 }
 
 // Frees the agent loop if a script never resolves, so one bad script can't wedge a run forever.
