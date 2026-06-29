@@ -1,4 +1,5 @@
-import { ipcMain, WebContents } from "electron";
+import { dialog, ipcMain, WebContents } from "electron";
+import { writeFile } from "node:fs/promises";
 import type { Window } from "./Window";
 
 export class EventManager {
@@ -124,6 +125,28 @@ export class EventManager {
         return image.toDataURL();
       }
       return null;
+    });
+
+    ipcMain.handle("tab-download-pdf", async (_, tabId: string) => {
+      const tab = this.mainWindow.getTab(tabId);
+      if (!tab) {
+        return false;
+      }
+
+      const pdfData = await tab.printToPdf();
+      const defaultName = `${(tab.title || "page").replace(/[/\\?%*:|"<>]/g, "-")}.pdf`;
+      const result = await dialog.showSaveDialog({
+        title: "Download as PDF",
+        defaultPath: defaultName,
+        filters: [{ name: "PDF", extensions: ["pdf"] }],
+      });
+
+      if (result.canceled || !result.filePath) {
+        return false;
+      }
+
+      await writeFile(result.filePath, pdfData);
+      return true;
     });
 
     ipcMain.handle("tab-run-js", async (_, tabId: string, code: string) => {

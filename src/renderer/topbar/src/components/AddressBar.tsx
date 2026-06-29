@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { ArrowLeft, ArrowRight, RefreshCw, Loader2, PanelLeftClose, PanelLeft } from 'lucide-react'
+import { ArrowLeft, ArrowRight, RefreshCw, Loader2, PanelLeftClose, PanelLeft, FileDown } from 'lucide-react'
 import { useBrowser } from '../contexts/BrowserContext'
 import { ToolBarButton } from '../components/ToolBarButton'
 import { Favicon } from '../components/Favicon'
@@ -7,7 +7,7 @@ import { DarkModeToggle } from '../components/DarkModeToggle'
 import { cn } from '@common/lib/utils'
 
 export const AddressBar: React.FC = () => {
-    const { activeTab, navigateToUrl, goBack, goForward, reload, isLoading } = useBrowser()
+    const { activeTab, navigateToUrl, goBack, goForward, reload, downloadPdf, isLoading } = useBrowser()
     const [url, setUrl] = useState('')
     const [isEditing, setIsEditing] = useState(false)
     const [isFocused, setIsFocused] = useState(false)
@@ -196,6 +196,11 @@ export const AddressBar: React.FC = () => {
 
             {/* Actions Menu */}
             <div className="flex items-center gap-1 app-region-no-drag">
+                <ToolBarButton
+                    Icon={FileDown}
+                    onClick={downloadPdf}
+                    active={activeTab !== null}
+                />
                 <DarkModeToggle />
                 <ToolBarButton
                     Icon={isSidebarOpen ? PanelLeftClose : PanelLeft}
