@@ -3,6 +3,7 @@ import { Plus } from 'lucide-react'
 import { useChat } from '../contexts/ChatContext'
 import { Button } from '@common/components/Button'
 import { ChatInput } from './ChatInput'
+import { RemixPrompt } from './RemixPrompt'
 import { AgentRunningBar } from './AgentRunningBar'
 import { AgentRunView } from './AgentRunView'
 import { useAutoScroll } from './useAutoScroll'
@@ -95,7 +96,8 @@ export const Chat: React.FC = () => {
             </div>
 
             {/* Input Area */}
-            <div className="p-4">
+            <div className="relative p-4">
+                <RemixPrompt />
                 {isAgentRunning ? (
                     <AgentRunningBar onStop={stopAgent} />
                 ) : (

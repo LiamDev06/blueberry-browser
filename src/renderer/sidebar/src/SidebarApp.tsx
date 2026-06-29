@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react'
 import { ChatProvider } from './contexts/ChatContext'
 import { Chat } from './components/Chat'
-import { RemixPrompt } from './components/RemixPrompt'
 import { useDarkMode } from '@common/hooks/useDarkMode'
 
 const SidebarContent: React.FC = () => {
@@ -17,9 +16,8 @@ const SidebarContent: React.FC = () => {
     }, [isDarkMode])
 
     return (
-        <div className="relative h-screen flex flex-col bg-background border-l border-border">
+        <div className="h-screen flex flex-col bg-background border-l border-border">
             <Chat />
-            <RemixPrompt />
         </div>
     )
 }
