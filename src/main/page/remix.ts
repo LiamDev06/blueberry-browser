@@ -10,15 +10,6 @@ const MIN_BLOCK_TEXT = 80;
 const MIN_MAIN_TEXT = 200;
 const MAX_REGIONS = 40;
 
-export type PageTheme = {
-  background: string;
-  foreground: string;
-  fontFamily: string;
-  fontSize: string;
-  linkColor: string;
-  isDark: boolean;
-};
-
 export type ContentRegion = {
   id: number;
   tag: string;
@@ -27,7 +18,6 @@ export type ContentRegion = {
 };
 
 export type RemixModel = {
-  theme: PageTheme;
   regions: ContentRegion[];
   mainHtml: string;
 };
@@ -160,35 +150,8 @@ function remixModelScript(): string {
       });
     }
 
-    let bg = "rgb(255, 255, 255)";
-    for (let el = main; el; el = el.parentElement) {
-      const color = getComputedStyle(el).backgroundColor;
-      if (color && color !== "transparent" && !color.startsWith("rgba(0, 0, 0, 0)")) {
-        bg = color;
-        break;
-      }
-    }
-    const luminance = (() => {
-      const nums = bg.match(/\\d+(\\.\\d+)?/g);
-      if (!nums || nums.length < 3) return 1;
-      const [r, g, b] = nums.map(Number);
-      return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
-    })();
-
-    const bodyStyle = getComputedStyle(document.body);
-    const link = main.querySelector("a") || document.querySelector("a");
-    const theme = {
-      background: bg,
-      foreground: bodyStyle.color,
-      fontFamily: bodyStyle.fontFamily,
-      fontSize: bodyStyle.fontSize,
-      linkColor: link ? getComputedStyle(link).color : bodyStyle.color,
-      isDark: luminance < 0.5,
-    };
-
     return {
       ok: true,
-      theme,
       regions,
       mainHtml: skeleton(main).slice(0, cfg.maxMainText),
     };

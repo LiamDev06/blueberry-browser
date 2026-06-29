@@ -2,13 +2,10 @@ import { z } from "zod";
 import sanitizeHtml from "sanitize-html";
 import { BrowserTool, look, fail, type ToolResult } from "../BrowserTool";
 import type { ToolContext } from "../ToolContext";
-import { replaceDocument } from "../../page/actions";
-import { readPageContent } from "../../page/observer";
 import {
   applyRemixOps,
   readRemixModel,
   type ContentRegion,
-  type PageTheme,
   type RemixAction,
   type RemixModel,
   type RemixOp,
@@ -61,7 +58,10 @@ export class RemixTool extends BrowserTool<RemixInput> {
     const model = await readRemixModel(ctx.tab);
 
     if (!model) {
-      return this.remixWholeDocument(input, ctx);
+      return fail(
+        "Couldn't remix",
+        "Couldn't read this page's content to edit — take a fresh look."
+      );
     }
 
     ctx.overlay?.startRemix();
@@ -99,35 +99,7 @@ export class RemixTool extends BrowserTool<RemixInput> {
       ctx.overlay?.endRemix();
     }
   }
-
-  private async remixWholeDocument(
-    input: RemixInput,
-    ctx: ToolContext
-  ): Promise<ToolResult> {
-    const page = await readPageContent(ctx.tab, MAX_FALLBACK_CHARS);
-    if (!page.text) {
-      return fail("Couldn't remix", "The page had no readable text to rewrite.");
-    }
-
-    ctx.overlay?.startRemix();
-    try {
-      const fragment = await ctx.llm.generate(
-        buildFallbackSystemPrompt(),
-        buildFallbackPrompt(input.instruction, page.title, page.url, page.text)
-      );
-
-      await replaceDocument(ctx.tab, buildFallbackDocument(sanitizeFragment(fragment)));
-      return look(
-        `Remixed ${page.title || "page"}`,
-        `Rewrote the page per: ${input.instruction}`
-      );
-    } finally {
-      ctx.overlay?.endRemix();
-    }
-  }
 }
-
-const MAX_FALLBACK_CHARS = 16000;
 
 type RemixEdit = {
   action: RemixAction;
@@ -248,88 +220,4 @@ function buildInPlacePrompt(
     "",
     blocks.join("\n\n"),
   ].join("\n");
-}
-
-function buildFallbackSystemPrompt(): string {
-  return [
-    "You are a page-remixing engine inside a web browser.",
-    "You are given the text of the page the user is viewing and an instruction for how to transform it.",
-    "Rewrite the main content to follow the instruction (e.g. simplify, summarize, translate).",
-    "",
-    "Output rules — follow exactly:",
-    "- Output ONLY an HTML fragment. No <html>, <head>, <body>, <script>, or <style> tags.",
-    `- Use only these tags: ${ALLOWED_TAGS.join(", ")}.`,
-    "- Begin with a single <h1> containing a title for the remixed page.",
-    "- Keep it faithful to the source — do not invent facts.",
-    "- Do not wrap the output in markdown code fences.",
-  ].join("\n");
-}
-
-function buildFallbackPrompt(
-  instruction: string,
-  title: string,
-  url: string,
-  text: string
-): string {
-  return [
-    `Instruction: ${instruction}`,
-    `Page title: ${title || "(untitled)"}`,
-    `Page URL: ${url}`,
-    "",
-    "Page content:",
-    text,
-  ].join("\n");
-}
-
-function buildFallbackDocument(fragment: string): string {
-  const theme: PageTheme = {
-    background: "#faf9f7",
-    foreground: "#1a1a1a",
-    fontFamily:
-      '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
-    fontSize: "18px",
-    linkColor: "#6b4eff",
-    isDark: false,
-  };
-
-  return `<!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <style>
-      html, body { margin: 0; padding: 0; background: ${theme.background}; }
-      #blueberry-remix {
-        max-width: 720px;
-        margin: 0 auto;
-        padding: 48px 24px 96px;
-        font-family: ${theme.fontFamily};
-        color: ${theme.foreground};
-        line-height: 1.7;
-        font-size: ${theme.fontSize};
-      }
-      #blueberry-remix h1 { font-size: 2rem; line-height: 1.2; margin: 0 0 .5em; }
-      #blueberry-remix h2 { font-size: 1.4rem; margin: 1.6em 0 .4em; }
-      #blueberry-remix h3 { font-size: 1.15rem; margin: 1.4em 0 .3em; }
-      #blueberry-remix p { margin: 0 0 1em; }
-      #blueberry-remix ul, #blueberry-remix ol { margin: 0 0 1em; padding-left: 1.4em; }
-      #blueberry-remix li { margin: .35em 0; }
-      #blueberry-remix a { color: ${theme.linkColor}; }
-      #blueberry-remix blockquote {
-        margin: 1em 0; padding-left: 1em;
-        border-left: 3px solid ${theme.linkColor}; color: #555;
-      }
-      .blueberry-remix-badge {
-        display: inline-block; font-size: 13px; font-weight: 600;
-        color: ${theme.linkColor}; letter-spacing: .04em;
-        text-transform: uppercase; margin-bottom: 24px;
-      }
-    </style>
-  </head>
-  <body>
-    <main id="blueberry-remix">
-      <div class="blueberry-remix-badge">✨ Remixed</div>
-      ${fragment}
-    </main>
-  </body>
-</html>`;
 }
