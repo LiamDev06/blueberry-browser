@@ -44,11 +44,11 @@ export function AgentRunView({ run }: AgentRunViewProps) {
                         )
                         .map((item) =>
                             item.kind === 'text' ? (
-                                <NarrationText key={item.id} text={item.text!} />
+                                <NarrationText key={item.id} text={item.text} />
                             ) : item.kind === 'reasoning' ? (
                                 <ReasoningBlock
                                     key={item.id}
-                                    text={item.text!}
+                                    text={item.text}
                                     active={!finished && item.id === lastItem?.id}
                                 />
                             ) : item.kind === 'question' ? (

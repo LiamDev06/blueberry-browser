@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import { MessageCircleQuestion, ArrowUp, Check } from 'lucide-react'
 import { cn } from '@common/lib/utils'
-import type { AgentItem } from '@shared/types'
+import type { QuestionItem } from '@shared/types'
 import { useChat } from '../../contexts/ChatContext'
 
 type QuestionCardProps = {
-    item: AgentItem
+    item: QuestionItem
 }
 
 export function QuestionCard({ item }: QuestionCardProps) {
