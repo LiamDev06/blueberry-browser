@@ -99,6 +99,10 @@ export class SideBar {
     return this.remixStore;
   }
 
+  get memory(): MemoryStore {
+    return this.memoryStore;
+  }
+
   sendRemixPrompt(data: RemixPromptData | null): void {
     this.webContentsView.webContents.send("remix-prompt:data", data);
   }

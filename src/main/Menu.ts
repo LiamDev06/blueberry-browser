@@ -97,6 +97,15 @@ export class AppMenu {
           },
         ],
       },
+      {
+        label: "Developer",
+        submenu: [
+          {
+            label: "Clear Memory & Remixes",
+            click: () => this.handleClearStorage(),
+          },
+        ],
+      },
     ];
 
     const menu = Menu.buildFromTemplate(template);
@@ -152,5 +161,10 @@ export class AppMenu {
     if (this.mainWindow.activeTab) {
       this.mainWindow.activeTab.goForward();
     }
+  }
+
+  private handleClearStorage(): void {
+    this.mainWindow.sidebar.memory.clear();
+    this.mainWindow.sidebar.remixes.clear();
   }
 }
