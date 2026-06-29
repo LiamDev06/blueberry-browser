@@ -1,12 +1,8 @@
 import { ElectronAPI } from "@electron-toolkit/preload";
-
-interface Point {
-  x: number;
-  y: number;
-}
+import type { HudPatch, Point } from "@shared/overlay";
 
 interface OverlayAPI {
-  onStart: (callback: (goal: string) => void) => void;
+  onHud: (callback: (patch: HudPatch) => void) => void;
   onMove: (callback: (point: Point) => void) => void;
   removeAll: () => void;
 }

@@ -67,11 +67,19 @@ export class AgentOverlay {
     this.updateBounds(sidebarVisible);
     this.restack();
     this.view.setVisible(true);
-    this.send("overlay:start", goal);
+    this.send("overlay:hud", { goal, remixing: false });
   }
 
   moveCursor(x: number, y: number): void {
     this.send("overlay:move", { x, y });
+  }
+
+  startRemix(): void {
+    this.send("overlay:hud", { remixing: true });
+  }
+
+  endRemix(): void {
+    this.send("overlay:hud", { remixing: false });
   }
 
   hide(): void {

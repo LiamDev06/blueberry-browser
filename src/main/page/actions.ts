@@ -288,22 +288,6 @@ export async function scroll(
   return { ok: true };
 }
 
-export async function replaceDocument(
-  tab: Tab,
-  html: string
-): Promise<ActionResult> {
-  const session = await chromeDevtoolsProtocolSession(tab);
-  await session.sendCommand(CdpCommand.EnablePage);
-
-  const { frameTree } = await session.sendCommand(CdpCommand.GetFrameTree);
-  await session.sendCommand(CdpCommand.SetDocumentContent, {
-    frameId: frameTree.frame.id,
-    html,
-  });
-
-  return { ok: true };
-}
-
 function elementName(node: AxNode): string {
   return (node.name?.value ?? "").replace(/\s+/g, " ").trim().slice(0, 120);
 }

@@ -1,10 +1,24 @@
 import { MousePointer2 } from 'lucide-react'
 import { useBlockUserInput } from './hooks/useBlockUserInput'
 import { useHudState } from './hooks/useHudState'
+import { RemixLayer } from './components/RemixLayer'
 
 export function OverlayApp() {
-    const { goal, cursor } = useHudState()
+    const { goal, cursor, remixing } = useHudState()
     useBlockUserInput()
+
+    if (remixing) {
+        return (
+            <div className="hud">
+                <RemixLayer />
+                <div className="banner banner--remix">
+                    <span className="remix-spark">✨</span>
+                    <span>Remixing this page</span>
+                    <span className="remix-dots" />
+                </div>
+            </div>
+        )
+    }
 
     return (
         <div className="hud">
