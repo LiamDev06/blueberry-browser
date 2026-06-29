@@ -38,7 +38,7 @@ export function RemixPrompt() {
                 <div className="flex items-center justify-between gap-2 p-3">
                     <div className="flex items-center gap-2 text-xs font-semibold text-foreground">
                         <Sparkles className="size-4 text-violet-500 dark:text-violet-400" />
-                        You remixed this page
+                        You have remixed this page before
                     </div>
                     <div className="flex items-center gap-1 text-muted-foreground">
                         <button
