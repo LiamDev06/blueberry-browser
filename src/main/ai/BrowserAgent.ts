@@ -2,7 +2,7 @@ import { WebContents } from "electron";
 import { stepCountIs } from "ai";
 import type { Window } from "../Window";
 import type { LLMClient } from "./LLMClient";
-import type { AgentRequest, AgentRun, RunStatus } from "@shared/types";
+import type { AgentRequest, AgentRun, QuestionItem, RunStatus, TextItem } from "@shared/types";
 import { generateGoal, type TaskGoal } from "./AgentGoal";
 import { ElementRegistry } from "../page/registry";
 import type { ToolDependencies } from "./ToolContext";
@@ -64,7 +64,7 @@ export class BrowserAgent {
     this.pendingAnswers.delete(id);
 
     const item = this.run?.items.find(
-      (item) => item.kind === "question" && item.id === id
+      (item): item is QuestionItem => item.kind === "question" && item.id === id
     );
     if (item) {
       item.answer = answer;
@@ -176,10 +176,11 @@ export class BrowserAgent {
           }
           case "text-delta": {
             const item = run.items.find(
-              (item) => item.kind === "text" && item.id === part.id
+              (item): item is TextItem =>
+                item.kind === "text" && item.id === part.id
             );
             if (item) {
-              item.text = (item.text || "") + part.text;
+              item.text = item.text + part.text;
               this.dirty = true;
             }
             break;
@@ -200,7 +201,7 @@ export class BrowserAgent {
           case "reasoning-delta": {
             const last = run.items[run.items.length - 1];
             if (last?.kind === "reasoning") {
-              last.text = (last.text || "") + part.text;
+              last.text = last.text + part.text;
               this.dirty = true;
             }
             break;

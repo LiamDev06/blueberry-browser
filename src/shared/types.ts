@@ -32,17 +32,35 @@ export interface AgentRequest {
   messageId: string;
 }
 
-export interface AgentItem {
+export interface TextItem {
   id: string;
-  kind: "text" | "action" | "reasoning" | "question";
-  text?: string;
-  tool?: ToolName;
+  kind: "text";
+  text: string;
+}
+
+export interface ReasoningItem {
+  id: string;
+  kind: "reasoning";
+  text: string;
+}
+
+export interface ActionItem {
+  id: string;
+  kind: "action";
+  tool: ToolName;
+  status: ActionStatus;
   title?: string;
-  status?: ActionStatus;
-  question?: string;
+}
+
+export interface QuestionItem {
+  id: string;
+  kind: "question";
+  question: string;
   options?: string[];
   answer?: string;
 }
+
+export type AgentItem = TextItem | ReasoningItem | ActionItem | QuestionItem;
 
 export interface AgentCriterion {
   text: string;
