@@ -1,7 +1,7 @@
 import {
     MousePointerClick, Hand, Keyboard, Globe, ArrowLeft, ArrowRight,
     MoveVertical, Camera, Sparkles, ListChecks, Layers, Plus, ArrowLeftRight, X,
-    MessageCircleQuestion, Brain, Code
+    MessageCircleQuestion, Brain, Code, FileText, Pencil
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { ToolName } from '@shared/types'
@@ -24,6 +24,8 @@ export const TOOL_META: Record<ToolName, ToolMeta> = {
     remix: { icon: Sparkles, runningLabel: 'Remixing…' },
     list_tabs: { icon: Layers, runningLabel: 'Listing tabs…' },
     create_tab: { icon: Plus, runningLabel: 'Opening a tab…' },
+    create_virtual_page: { icon: FileText, runningLabel: 'Building a page…' },
+    update_virtual_page: { icon: Pencil, runningLabel: 'Updating the page…' },
     switch_tab: { icon: ArrowLeftRight, runningLabel: 'Switching tabs…' },
     close_tab: { icon: X, runningLabel: 'Closing a tab…' },
     ask_user: { icon: MessageCircleQuestion, runningLabel: 'Waiting for your answer…' },

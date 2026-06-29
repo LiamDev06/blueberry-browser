@@ -11,6 +11,8 @@ export type ToolName =
   | "remix"
   | "list_tabs"
   | "create_tab"
+  | "create_virtual_page"
+  | "update_virtual_page"
   | "switch_tab"
   | "close_tab"
   | "ask_user"

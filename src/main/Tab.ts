@@ -6,6 +6,7 @@ export class Tab {
   private _title: string;
   private _url: string;
   private _isVisible: boolean = false;
+  private _isVirtual: boolean = false;
 
   constructor(id: string, url: string = "https://www.google.com") {
     this._id = id;
@@ -60,6 +61,14 @@ export class Tab {
 
   get isVisible(): boolean {
     return this._isVisible;
+  }
+
+  get isVirtual(): boolean {
+    return this._isVirtual;
+  }
+
+  setVirtual(value: boolean): void {
+    this._isVirtual = value;
   }
 
   get webContents() {

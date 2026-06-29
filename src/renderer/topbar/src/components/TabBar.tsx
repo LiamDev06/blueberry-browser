@@ -1,5 +1,5 @@
 import React from 'react'
-import { Plus, X } from 'lucide-react'
+import { Plus, X, FileText } from 'lucide-react'
 import { useBrowser } from '../contexts/BrowserContext'
 import { Favicon } from '../components/Favicon'
 import { TabBarButton } from '../components/TabBarButton'
@@ -11,6 +11,7 @@ interface TabItemProps {
     favicon?: string | null
     isActive: boolean
     isPinned?: boolean
+    isVirtual?: boolean
     onClose: () => void
     onActivate: () => void
 }
@@ -20,6 +21,7 @@ const TabItem: React.FC<TabItemProps> = ({
     favicon,
     isActive,
     isPinned = false,
+    isVirtual = false,
     onClose,
     onActivate
 }) => {
@@ -42,7 +44,11 @@ const TabItem: React.FC<TabItemProps> = ({
             >
                 {/* Favicon */}
                 <div className={cn(!isPinned && "mr-2")}>
-                    <Favicon src={favicon} />
+                    {isVirtual ? (
+                        <FileText className="size-4 text-muted-foreground" />
+                    ) : (
+                        <Favicon src={favicon} />
+                    )}
                 </div>
 
                 {/* Title (hide for pinned tabs) */}
@@ -75,7 +81,7 @@ const TabItem: React.FC<TabItemProps> = ({
 }
 
 export const TabBar: React.FC = () => {
-    const { tabs, createTab, closeTab, switchTab, isLoading } = useBrowser()
+    const { tabs, createTab, closeTab, switchTab } = useBrowser()
 
     const handleCreateTab = () => {
         createTab('https://www.google.com')
@@ -103,8 +109,9 @@ export const TabBar: React.FC = () => {
                         key={tab.id}
                         id={tab.id}
                         title={tab.title}
-                        favicon={getFavicon(tab.url)}
+                        favicon={tab.isVirtual ? null : getFavicon(tab.url)}
                         isActive={tab.isActive}
+                        isVirtual={tab.isVirtual}
                         onClose={() => closeTab(tab.id)}
                         onActivate={() => switchTab(tab.id)}
                     />

@@ -14,6 +14,8 @@ import { RunJsTool } from "./tools/RunJsTool";
 import { RemixTool } from "./tools/RemixTool";
 import { ListTabsTool } from "./tools/ListTabsTool";
 import { CreateTabTool } from "./tools/CreateTabTool";
+import { CreateVirtualPageTool } from "./tools/CreateVirtualPageTool";
+import { UpdateVirtualPageTool } from "./tools/UpdateVirtualPageTool";
 import { SwitchTabTool } from "./tools/SwitchTabTool";
 import { CloseTabTool } from "./tools/CloseTabTool";
 import { AskUserTool } from "./tools/AskUserTool";
@@ -87,6 +89,8 @@ export const agentTools = new ToolRegistry([
   new RemixTool(),
   new ListTabsTool(),
   new CreateTabTool(),
+  new CreateVirtualPageTool(),
+  new UpdateVirtualPageTool(),
   new SwitchTabTool(),
   new CloseTabTool(),
   new AskUserTool(),
