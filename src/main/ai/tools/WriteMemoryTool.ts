@@ -21,8 +21,11 @@ export class WriteMemoryTool extends BrowserTool<WriteMemoryInput> {
   async execute(input: WriteMemoryInput, ctx: ToolContext): Promise<ToolResult> {
     const saved = ctx.memory.add(input.content);
     if (!saved) {
-      return reply("Already known", "Nothing new to remember.");
+      return reply("Already in memory", "Nothing new to remember.");
     }
-    return reply("Remembered", `Saved to memory: ${saved.text}`);
+    return reply(
+      `Wrote “${saved.text}” to memory`,
+      `Saved to memory: ${saved.text}`
+    );
   }
 }
