@@ -32,15 +32,27 @@ export type LocatedPoint =
   | { ok: false; error: string }
   | { ok: true; x: number; y: number };
 
-export type PointCheck =
+export type ClickPoint =
   | { ok: false; error: string }
-  | { ok: true; target: string };
+  | { ok: true; x: number; y: number; target: string };
 
 interface DescribedNode {
   nodeName?: string;
   backendNodeId?: number;
   attributes?: string[];
   children?: DescribedNode[];
+}
+
+interface AxNode {
+  ignored?: boolean;
+  role?: { value?: string };
+  name?: { value?: string };
+  backendDOMNodeId?: number;
+}
+
+interface FrameTreeNode {
+  frame: { id: string };
+  childFrames?: FrameTreeNode[];
 }
 
 interface Bounds {
@@ -57,11 +69,14 @@ export async function snapshotPage(
   maxElements = MAX_ELEMENTS
 ): Promise<PageSnapshot> {
   const session = await chromeDevtoolsProtocolSession(tab);
+  await session.sendCommand(CdpCommand.EnablePage);
 
-  const [{ nodes }, metrics] = await Promise.all([
-    session.sendCommand(CdpCommand.GetFullAXTree),
+  const [frameIds, metrics] = await Promise.all([
+    collectFrameIds(session),
     session.sendCommand(CdpCommand.GetLayoutMetrics),
   ]);
+
+  const nodes = await collectAxNodes(session, frameIds);
 
   const candidates = nodes.filter(
     (node) =>
@@ -71,13 +86,15 @@ export async function snapshotPage(
       INTERACTIVE_ROLES.has(node.role.value)
   );
 
+  const viewportHeight = metrics.cssLayoutViewport.clientHeight;
+
   const located = await Promise.all(
     candidates.map(async (node) => {
       try {
         const { model } = (await session.sendCommand(CdpCommand.GetBoxModel, {
           backendNodeId: node.backendDOMNodeId,
         }));
-        
+
         const box = quadBounds(model.content);
         if (box.width < 2 || box.height < 2) {
           return null;
@@ -87,7 +104,8 @@ export async function snapshotPage(
           node.role?.value === "link"
             ? await linkHref(session, node.backendDOMNodeId!, tab.url)
             : undefined;
-        return { node, box, href };
+        const inViewport = box.top < viewportHeight && box.top + box.height > 0;
+        return { node, box, href, inViewport };
       } catch {
         // No box model means the node isn't rendered
         return null;
@@ -95,19 +113,21 @@ export async function snapshotPage(
     })
   );
 
-  const viewportHeight = metrics.cssLayoutViewport.clientHeight;
+  const visible = located.flatMap((item) => (item ? [item] : []));
 
-  const elements: ElementSnapshot[] = located
-    .flatMap((item) => (item ? [item] : []))
+  const ordered = [...visible].sort(
+    (first, second) => Number(second.inViewport) - Number(first.inViewport)
+  );
+
+  const elements: ElementSnapshot[] = ordered
     .slice(0, maxElements)
     .map((item, index) => ({
       index,
       role: item.node.role!.value!,
-      // TODO, could maybe break out into some construct name function?
-      name: (item.node.name?.value ?? "").replace(/\s+/g, " ").trim().slice(0, 120),
+      name: elementName(item.node),
       href: item.href,
       backendNodeId: item.node.backendDOMNodeId!,
-      inViewport: item.box.top < viewportHeight && item.box.top + item.box.height > 0,
+      inViewport: item.inViewport,
     }));
 
   return {
@@ -117,6 +137,7 @@ export async function snapshotPage(
     scrollHeight: Math.round(metrics.cssContentSize.height),
     viewportHeight,
     elements,
+    hiddenElements: Math.max(0, visible.length - elements.length),
   };
 }
 
@@ -143,50 +164,80 @@ export async function locateElement(
   const { cssLayoutViewport } = (await session.sendCommand(
     CdpCommand.GetLayoutMetrics
   ));
-  const clamp = (value: number, max: number): number =>
-    Math.round(Math.min(Math.max(value, 1), max - 1));
 
   return {
     ok: true,
-    x: clamp(box.left + box.width / 2, cssLayoutViewport.clientWidth),
-    y: clamp(box.top + box.height / 2, cssLayoutViewport.clientHeight),
+    x: clampToViewport(box.left + box.width / 2, cssLayoutViewport.clientWidth),
+    y: clampToViewport(box.top + box.height / 2, cssLayoutViewport.clientHeight),
   };
 }
 
-export async function verifyPoint(
+export async function findClickablePoint(
   tab: Tab,
-  backendNodeId: number,
-  x: number,
-  y: number
-): Promise<PointCheck> {
+  backendNodeId: number
+): Promise<ClickPoint> {
   const session = await chromeDevtoolsProtocolSession(tab);
 
-  let hitNodeId: number | undefined;
   try {
-    ({ backendNodeId: hitNodeId } = (await session.sendCommand(CdpCommand.GetNodeForLocation, {
-      x,
-      y,
-      includeUserAgentShadowDOM: true,
-    })));
+    await session.sendCommand(CdpCommand.ScrollIntoViewIfNeeded, { backendNodeId });
   } catch {
-    return { ok: false, error: "Nothing is at that position — it may be off-screen." };
-  }
-  if (hitNodeId == null) {
-    return { ok: false, error: "Nothing is at that position — it may be off-screen." };
+    // Best-effort
   }
 
-  const onTarget =
-    hitNodeId === backendNodeId ||
-    (await isInSubtree(session, backendNodeId, hitNodeId)) || // hit a descendant of the target
-    (await isInSubtree(session, hitNodeId, backendNodeId)); // hit an ancestor wrapping the target
-
-  if (onTarget) {
-    return { ok: true, target: await describe(session, hitNodeId) };
+  const box = await boxFor(session, backendNodeId);
+  if (!box) {
+    return { ok: false, error: "That element is gone from the page — take a fresh look." };
   }
-  
+  if (box.width < 1 || box.height < 1) {
+    return { ok: false, error: "That element has no visible clickable area." };
+  }
+
+  const { cssLayoutViewport } = (await session.sendCommand(
+    CdpCommand.GetLayoutMetrics
+  ));
+
+  const fractions = [0.5, 0.3, 0.7];
+  const points = fractions.flatMap((fractionY) =>
+    fractions.map((fractionX) => ({
+      x: clampToViewport(box.left + box.width * fractionX, cssLayoutViewport.clientWidth),
+      y: clampToViewport(box.top + box.height * fractionY, cssLayoutViewport.clientHeight),
+    }))
+  );
+
+  let lastHit: string | undefined;
+  for (const point of points) {
+    let hitNodeId: number | undefined;
+    try {
+      ({ backendNodeId: hitNodeId } = (await session.sendCommand(
+        CdpCommand.GetNodeForLocation,
+        { x: point.x, y: point.y, includeUserAgentShadowDOM: true }
+      )));
+    } catch {
+      continue;
+    }
+    if (hitNodeId == null) {
+      continue;
+    }
+
+    const onTarget =
+      hitNodeId === backendNodeId ||
+      (await isInSubtree(session, backendNodeId, hitNodeId)) ||
+      (await isInSubtree(session, hitNodeId, backendNodeId));
+
+    if (onTarget) {
+      return {
+        ok: true,
+        x: point.x,
+        y: point.y,
+        target: await describe(session, hitNodeId),
+      };
+    }
+    lastHit = await describe(session, hitNodeId);
+  }
+
   return {
     ok: false,
-    error: `The cursor is over ${await describe(session, hitNodeId)}, not the intended element — it is covered or has moved.`,
+    error: `The cursor is over ${lastHit ?? "another element"}, not the intended element — it is covered or has moved.`,
   };
 }
 
@@ -296,6 +347,47 @@ export async function replaceDocument(
   });
 
   return { ok: true };
+}
+
+function elementName(node: AxNode): string {
+  return (node.name?.value ?? "").replace(/\s+/g, " ").trim().slice(0, 120);
+}
+
+function clampToViewport(value: number, max: number): number {
+  return Math.round(Math.min(Math.max(value, 1), max - 1));
+}
+
+async function collectFrameIds(session: Cdp): Promise<string[]> {
+  const { frameTree } = (await session.sendCommand(CdpCommand.GetFrameTree));
+
+  const ids: string[] = [];
+  const walk = (node: FrameTreeNode): void => {
+    ids.push(node.frame.id);
+    for (const child of node.childFrames ?? []) {
+      walk(child);
+    }
+  };
+  walk(frameTree);
+  return ids;
+}
+
+async function collectAxNodes(
+  session: Cdp,
+  frameIds: string[]
+): Promise<AxNode[]> {
+  const trees = await Promise.all(
+    frameIds.map(async (frameId) => {
+      try {
+        const { nodes } = (await session.sendCommand(CdpCommand.GetFullAXTree, {
+          frameId,
+        }));
+        return nodes as AxNode[];
+      } catch {
+        return [];
+      }
+    })
+  );
+  return trees.flat();
 }
 
 function quadBounds(quad: number[]): Bounds {

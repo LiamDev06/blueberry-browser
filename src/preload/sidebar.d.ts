@@ -37,6 +37,7 @@ interface SidebarAPI {
   // Browser-use agent
   runAgentTask: (request: AgentRequest) => Promise<void>;
   stopAgent: () => Promise<boolean>;
+  answerAgentQuestion: (payload: { id: string; answer: string }) => Promise<boolean>;
   onAgentActivity: (callback: (run: AgentRun) => void) => void;
   removeAgentActivityListener: () => void;
 

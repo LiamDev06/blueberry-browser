@@ -4,10 +4,12 @@ import { join } from "path";
 import { LayoutHelper } from "./layout";
 import { LLMClient } from "./ai/LLMClient";
 import { BrowserAgent } from "./ai/BrowserAgent";
+import { MemoryStore } from "./ai/MemoryStore";
 
 export class SideBar {
   private webContentsView: WebContentsView;
   private baseWindow: BaseWindow;
+  private memoryStore: MemoryStore;
   private llmClient: LLMClient;
   private browserAgent: BrowserAgent;
   private isVisible: boolean = true;
@@ -18,10 +20,12 @@ export class SideBar {
     baseWindow.contentView.addChildView(this.webContentsView);
     this.setupBounds();
 
+    this.memoryStore = new MemoryStore();
     this.llmClient = new LLMClient(this.webContentsView.webContents);
     this.browserAgent = new BrowserAgent(
       this.webContentsView.webContents,
-      this.llmClient
+      this.llmClient,
+      this.memoryStore
     );
   }
 

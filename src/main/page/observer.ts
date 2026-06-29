@@ -33,6 +33,12 @@ export function formatSnapshot(snapshot: PageSnapshot): string {
     return parts.join(" ");
   });
 
+  if (snapshot.hiddenElements > 0) {
+    lines.push(
+      `…and ${snapshot.hiddenElements} more off-screen element(s) not shown — scroll to bring them into view.`
+    );
+  }
+
   return [
     `URL: ${snapshot.url}`,
     `Title: ${snapshot.title}`,

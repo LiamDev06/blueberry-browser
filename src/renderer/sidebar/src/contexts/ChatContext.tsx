@@ -17,6 +17,7 @@ interface ChatContextType {
     agentMode: boolean
     setAgentMode: (on: boolean) => void
     stopAgent: () => void
+    answerQuestion: (id: string, answer: string) => void
     agentRuns: AgentRun[]
 
     // Chat actions
@@ -99,6 +100,18 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const stopAgent = useCallback(() => {
         window.sidebarAPI.stopAgent()
+    }, [])
+
+    const answerQuestion = useCallback((id: string, answer: string) => {
+        setAgentRuns((previousRuns) =>
+            previousRuns.map((run) => ({
+                ...run,
+                items: run.items.map((item) =>
+                    item.kind === 'question' && item.id === id ? { ...item, answer } : item
+                )
+            }))
+        )
+        window.sidebarAPI.answerAgentQuestion({ id, answer })
     }, [])
 
     const clearChat = useCallback(async () => {
@@ -190,6 +203,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
         agentMode,
         setAgentMode,
         stopAgent,
+        answerQuestion,
         agentRuns,
         sendMessage,
         clearChat,

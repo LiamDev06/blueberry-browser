@@ -42,4 +42,5 @@ export type PageSnapshot = {
   scrollHeight: number;
   viewportHeight: number;
   elements: ElementSnapshot[];
+  hiddenElements: number;
 }
