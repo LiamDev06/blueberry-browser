@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { locateElement, verifyPoint } from "../../page/actions";
+import { locateElement, findClickablePoint } from "../../page/actions";
 import { BrowserTool, look, fail, type ToolResult } from "../BrowserTool";
 import type { ToolContext } from "../ToolContext";
 import { HOVER_MS } from "./constants";
@@ -42,15 +42,17 @@ export class ClickTool extends BrowserTool<ClickInput> {
     ctx.tab.moveMouse(loc.x, loc.y);
     await Utils.delay(HOVER_MS);
 
-    const check = await verifyPoint(ctx.tab, nodeId, loc.x, loc.y);
-    if (!check.ok) {
+    const hit = await findClickablePoint(ctx.tab, nodeId);
+    if (!hit.ok) {
       return fail(
         `Couldn't click ${label}`,
-        `Did not click — the position check failed: ${check.error}`
+        `Did not click — the position check failed: ${hit.error}`
       );
     }
 
-    ctx.tab.clickAt(loc.x, loc.y);
-    return look(`Clicked ${description || check.target}`);
+    ctx.overlay?.moveCursor(hit.x, hit.y);
+    ctx.tab.moveMouse(hit.x, hit.y);
+    ctx.tab.clickAt(hit.x, hit.y);
+    return look(`Clicked ${description || hit.target}`);
   }
 }
