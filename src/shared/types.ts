@@ -7,6 +7,7 @@ export type ToolName =
   | "forward"
   | "scroll"
   | "screenshot"
+  | "run_js"
   | "remix"
   | "list_tabs"
   | "create_tab"

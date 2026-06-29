@@ -10,6 +10,7 @@ import { BackTool } from "./tools/BackTool";
 import { ForwardTool } from "./tools/ForwardTool";
 import { ScrollTool } from "./tools/ScrollTool";
 import { ScreenshotTool } from "./tools/ScreenshotTool";
+import { RunJsTool } from "./tools/RunJsTool";
 import { RemixTool } from "./tools/RemixTool";
 import { ListTabsTool } from "./tools/ListTabsTool";
 import { CreateTabTool } from "./tools/CreateTabTool";
@@ -82,6 +83,7 @@ export const agentTools = new ToolRegistry([
   new ForwardTool(),
   new ScrollTool(),
   new ScreenshotTool(),
+  new RunJsTool(),
   new RemixTool(),
   new ListTabsTool(),
   new CreateTabTool(),
