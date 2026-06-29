@@ -5,11 +5,14 @@ import { LayoutHelper } from "./layout";
 import { LLMClient } from "./ai/LLMClient";
 import { BrowserAgent } from "./ai/BrowserAgent";
 import { MemoryStore } from "./ai/MemoryStore";
+import { RemixStore } from "./page/RemixStore";
+import type { RemixPromptData } from "@shared/remix";
 
 export class SideBar {
   private webContentsView: WebContentsView;
   private baseWindow: BaseWindow;
   private memoryStore: MemoryStore;
+  private remixStore: RemixStore;
   private llmClient: LLMClient;
   private browserAgent: BrowserAgent;
   private isVisible: boolean = true;
@@ -21,11 +24,13 @@ export class SideBar {
     this.setupBounds();
 
     this.memoryStore = new MemoryStore();
+    this.remixStore = new RemixStore();
     this.llmClient = new LLMClient(this.webContentsView.webContents);
     this.browserAgent = new BrowserAgent(
       this.webContentsView.webContents,
       this.llmClient,
-      this.memoryStore
+      this.memoryStore,
+      this.remixStore
     );
   }
 
@@ -88,6 +93,14 @@ export class SideBar {
 
   get agent(): BrowserAgent {
     return this.browserAgent;
+  }
+
+  get remixes(): RemixStore {
+    return this.remixStore;
+  }
+
+  sendRemixPrompt(data: RemixPromptData | null): void {
+    this.webContentsView.webContents.send("remix-prompt:data", data);
   }
 
   show(): void {

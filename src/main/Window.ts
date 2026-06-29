@@ -3,6 +3,7 @@ import { Tab } from "./Tab";
 import { TopBar } from "./TopBar";
 import { SideBar } from "./SideBar";
 import { AgentOverlay } from "./ai/AgentOverlay";
+import { replayRemix } from "./page/remix";
 import { LayoutHelper } from "./layout";
 
 export class Window {
@@ -13,6 +14,7 @@ export class Window {
   private _topBar: TopBar;
   private _sideBar: SideBar;
   private _agentOverlay: AgentOverlay;
+  private freshlyRemixedUrl: string | null = null;
 
   constructor() {
     // Create the browser window.
@@ -106,6 +108,13 @@ export class Window {
     // Add the tab's WebContentsView to the window
     this._baseWindow.contentView.addChildView(tab.view);
 
+    tab.webContents.on("did-navigate", () => {
+      if (this.activeTabId === tab.id) {
+        this.freshlyRemixedUrl = null;
+        this.evaluateRemixPrompt();
+      }
+    });
+
     // addChildView stacks on top, so re-raise the overlay above the new tab.
     this._agentOverlay.raise();
 
@@ -184,6 +193,8 @@ export class Window {
 
     // Update the window title to match the tab title
     this._baseWindow.setTitle(tab.title || "Blueberry Browser");
+
+    this.evaluateRemixPrompt();
 
     return true;
   }
@@ -266,6 +277,62 @@ export class Window {
   // Getter for the agent's on-screen overlay
   get agentOverlay(): AgentOverlay {
     return this._agentOverlay;
+  }
+
+  onAgentRunStarted(): void {
+    this._sideBar.sendRemixPrompt(null);
+  }
+
+  onAgentRunEnded(): void {
+    this.evaluateRemixPrompt();
+  }
+
+  markFreshlyRemixed(url: string): void {
+    this.freshlyRemixedUrl = url;
+  }
+
+  private evaluateRemixPrompt(): void {
+    const tab = this.activeTab;
+    if (!tab || this._sideBar.agent.isRunning) {
+      this._sideBar.sendRemixPrompt(null);
+      return;
+    }
+
+    if (tab.url === this.freshlyRemixedUrl) {
+      this._sideBar.sendRemixPrompt(null);
+      return;
+    }
+
+    const remixes = this._sideBar.remixes.getForUrl(tab.url);
+    if (remixes.length === 0) {
+      this._sideBar.sendRemixPrompt(null);
+      return;
+    }
+
+    this._sideBar.sendRemixPrompt({
+      pageTitle: tab.title,
+      versions: remixes.map((remix) => ({
+        id: remix.id,
+        label: remix.label,
+        createdAt: remix.createdAt,
+      })),
+    });
+  }
+
+  async loadRemix(id: string): Promise<boolean> {
+    const remix = this._sideBar.remixes.get(id);
+    const tab = this.activeTab;
+    this._sideBar.sendRemixPrompt(null);
+    if (!remix || !tab) {
+      return false;
+    }
+
+    const result = await replayRemix(tab, remix.ops);
+    return result.ok;
+  }
+
+  dismissRemixPrompt(): void {
+    this._sideBar.sendRemixPrompt(null);
   }
 
   // Getter for topBar to access from main process

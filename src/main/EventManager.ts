@@ -19,6 +19,9 @@ export class EventManager {
     // Page content events
     this.handlePageContentEvents();
 
+    // Remix prompt events
+    this.handleRemixPromptEvents();
+
     // Dark mode events
     this.handleDarkModeEvents();
 
@@ -227,6 +230,17 @@ export class EventManager {
         return this.mainWindow.activeTab.url;
       }
       return null;
+    });
+  }
+
+  private handleRemixPromptEvents(): void {
+    ipcMain.handle("remix-prompt:load", async (_, id: string) => {
+      return await this.mainWindow.loadRemix(id);
+    });
+
+    ipcMain.handle("remix-prompt:dismiss", () => {
+      this.mainWindow.dismissRemixPrompt();
+      return true;
     });
   }
 

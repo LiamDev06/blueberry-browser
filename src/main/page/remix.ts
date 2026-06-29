@@ -42,6 +42,12 @@ export type RemixOp = {
   html: string;
 };
 
+export type ResolvedRemixOp = {
+  action: RemixAction;
+  selector: string;
+  html: string;
+};
+
 export async function readRemixModel(tab: Tab): Promise<RemixModel | null> {
   const config = {
     mainAttr: REMIX_MAIN_ATTR,
@@ -61,21 +67,31 @@ export async function readRemixModel(tab: Tab): Promise<RemixModel | null> {
   }
 }
 
-export async function applyRemixOps(
-  tab: Tab,
-  ops: RemixOp[]
-): Promise<ActionResult> {
-  const resolved = ops.map((op) => ({
+export function resolveRemixOps(ops: RemixOp[]): ResolvedRemixOp[] {
+  return ops.map((op) => ({
     action: op.action,
     selector: selectorFor(op.target),
     html: op.html,
   }));
+}
 
+export async function applyResolvedOps(
+  tab: Tab,
+  resolved: ResolvedRemixOp[]
+): Promise<ActionResult> {
   const result = await tab.runJs(`(${remixApplyScript})(${JSON.stringify(resolved)})`);
   if (result && result.applied > 0) {
     return { ok: true };
   }
   return { ok: false, error: "None of the remix targets are on the page." };
+}
+
+export async function replayRemix(
+  tab: Tab,
+  resolved: ResolvedRemixOp[]
+): Promise<ActionResult> {
+  await readRemixModel(tab);
+  return applyResolvedOps(tab, resolved);
 }
 
 function selectorFor(target: RemixTarget): string {

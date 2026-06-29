@@ -8,6 +8,7 @@ import { ElementRegistry } from "../page/registry";
 import type { ToolDependencies } from "./ToolContext";
 import { agentTools } from "./ToolRegistry";
 import type { MemoryStore } from "./MemoryStore";
+import type { RemixStore } from "../page/RemixStore";
 
 const MAX_STEPS = 60;
 const EMIT_THROTTLE_MS = 40;
@@ -16,6 +17,7 @@ export class BrowserAgent {
   private readonly webContents: WebContents;
   private readonly llm: LLMClient;
   private readonly memory: MemoryStore;
+  private readonly remixStore: RemixStore;
   private window: Window | null = null;
   private running = false;
   private aborted = false;
@@ -27,10 +29,16 @@ export class BrowserAgent {
   
   private pendingAnswers = new Map<string, (answer: string) => void>();
 
-  constructor(webContents: WebContents, llm: LLMClient, memory: MemoryStore) {
+  constructor(
+    webContents: WebContents,
+    llm: LLMClient,
+    memory: MemoryStore,
+    remixStore: RemixStore
+  ) {
     this.webContents = webContents;
     this.llm = llm;
     this.memory = memory;
+    this.remixStore = remixStore;
   }
 
   setWindow(window: Window): void {
@@ -133,6 +141,7 @@ export class BrowserAgent {
       this.setStatus("running");
 
       this.overlay?.show(goal.goal, this.window?.sidebar.getIsVisible() ?? true);
+      this.window?.onAgentRunStarted();
 
       const registry = new ElementRegistry();
       const initial = await registry.observe(tab);
@@ -143,6 +152,7 @@ export class BrowserAgent {
         goal,
         llm: this.llm,
         memory: this.memory,
+        remixStore: this.remixStore,
         overlay: this.overlay,
         registry,
         isAborted: () => this.aborted,
@@ -231,6 +241,7 @@ export class BrowserAgent {
       this.flush(); // guarantee the final frame
       this.overlay?.hide();
       this.running = false;
+      this.window?.onAgentRunEnded();
     }
   }
 
