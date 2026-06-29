@@ -4,8 +4,9 @@ import { Utils } from "../../utils";
 import { BrowserTool, look, fail, type ToolResult } from "../BrowserTool";
 import type { ToolContext } from "../ToolContext";
 import {
-  applyRemixOps,
+  applyResolvedOps,
   readRemixModel,
+  resolveRemixOps,
   type ContentRegion,
   type RemixAction,
   type RemixModel,
@@ -30,6 +31,11 @@ const remixInputSchema = z.object({
 type RemixInput = z.infer<typeof remixInputSchema>;
 
 const remixPlanSchema = z.object({
+  title: z
+    .string()
+    .describe(
+      "A short 2–4 word label for this remix that describes the result, e.g. \"Simplified summary\", \"Spanish translation\", \"Polite comments\"."
+    ),
   edits: z
     .array(
       z.object({
@@ -81,13 +87,17 @@ export class RemixTool extends BrowserTool<RemixInput> {
         );
       }
 
-      const result = await applyRemixOps(ctx.tab, ops);
+      const resolved = resolveRemixOps(ops);
+      const result = await applyResolvedOps(ctx.tab, resolved);
       if (!result.ok) {
         return fail(
           "Couldn't remix",
           "The parts of the page to edit are no longer there — take a fresh look."
         );
       }
+
+      const label = plan.title?.trim() || input.instruction;
+      ctx.remixStore.add(ctx.tab.url, ctx.run.id, ctx.tab.title, label, resolved);
 
       return look(
         `Remixed ${ctx.tab.title || "page"}`,
@@ -186,6 +196,7 @@ function buildSystemPrompt(): string {
     "- Do NOT add inline styles, colors, backgrounds, or fonts — rely on the page's own CSS via the classes you reuse.",
     "- No <html>, <head>, <body>, <script>, or <style> tags.",
     "- Stay faithful to the source — do not invent facts.",
+    "- Also return a short 2–4 word `title` that names the result, so the user can recognize this remix later.",
   ].join("\n");
 }
 

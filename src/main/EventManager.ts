@@ -20,6 +20,9 @@ export class EventManager {
     // Page content events
     this.handlePageContentEvents();
 
+    // Remix prompt events
+    this.handleRemixPromptEvents();
+
     // Dark mode events
     this.handleDarkModeEvents();
 
@@ -183,6 +186,7 @@ export class EventManager {
 
     // Chat message
     ipcMain.handle("sidebar-chat-message", async (_, request) => {
+      this.mainWindow.dismissRemixPrompt();
       // The LLMClient now handles getting the screenshot and context directly
       await this.mainWindow.sidebar.client.sendChatMessage(request);
     });
@@ -200,6 +204,7 @@ export class EventManager {
 
     // Run a browser-use agent task
     ipcMain.handle("sidebar-run-agent", async (_, request) => {
+      this.mainWindow.dismissRemixPrompt();
       await this.mainWindow.sidebar.agent.runTask(request);
     });
 
@@ -251,6 +256,17 @@ export class EventManager {
         return this.mainWindow.activeTab.url;
       }
       return null;
+    });
+  }
+
+  private handleRemixPromptEvents(): void {
+    ipcMain.handle("remix-prompt:load", async (_, id: string) => {
+      return await this.mainWindow.loadRemix(id);
+    });
+
+    ipcMain.handle("remix-prompt:dismiss", () => {
+      this.mainWindow.dismissRemixPrompt();
+      return true;
     });
   }
 

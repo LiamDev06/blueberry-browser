@@ -1,5 +1,6 @@
 import { ElectronAPI } from "@electron-toolkit/preload";
 import type { AgentRequest, AgentRun } from "@shared/types";
+import type { RemixPromptData } from "@shared/remix";
 
 interface ChatRequest {
   message: string;
@@ -40,6 +41,12 @@ interface SidebarAPI {
   answerAgentQuestion: (payload: { id: string; answer: string }) => Promise<boolean>;
   onAgentActivity: (callback: (run: AgentRun) => void) => void;
   removeAgentActivityListener: () => void;
+
+  // Remix prompt
+  onRemixPrompt: (callback: (data: RemixPromptData | null) => void) => void;
+  removeRemixPromptListener: () => void;
+  loadRemix: (id: string) => Promise<boolean>;
+  dismissRemix: () => Promise<void>;
 
   // Page content access
   getPageContent: () => Promise<string | null>;

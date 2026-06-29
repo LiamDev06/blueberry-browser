@@ -62,6 +62,20 @@ const sidebarAPI = {
     electronAPI.ipcRenderer.removeAllListeners("chat-messages-updated");
   },
 
+  // Remix prompt
+  onRemixPrompt: (callback: (data: unknown) => void) => {
+    electronAPI.ipcRenderer.on("remix-prompt:data", (_, data) => callback(data));
+  },
+
+  removeRemixPromptListener: () => {
+    electronAPI.ipcRenderer.removeAllListeners("remix-prompt:data");
+  },
+
+  loadRemix: (id: string) =>
+    electronAPI.ipcRenderer.invoke("remix-prompt:load", id),
+
+  dismissRemix: () => electronAPI.ipcRenderer.invoke("remix-prompt:dismiss"),
+
   // Page content access
   getPageContent: () => electronAPI.ipcRenderer.invoke("get-page-content"),
   getPageText: () => electronAPI.ipcRenderer.invoke("get-page-text"),

@@ -6,6 +6,7 @@ import type { TaskGoal } from "./AgentGoal";
 import type { ElementRegistry } from "../page/registry";
 import type { LLMClient } from "./LLMClient";
 import type { MemoryStore } from "./MemoryStore";
+import type { RemixStore } from "../page/RemixStore";
 import type { ToolCall } from "./BrowserTool";
 
 export interface ToolDependencies {
@@ -15,6 +16,7 @@ export interface ToolDependencies {
   goal: TaskGoal;
   llm: LLMClient;
   memory: MemoryStore;
+  remixStore: RemixStore;
   overlay: AgentOverlay | null;
   registry: ElementRegistry;
   isAborted: () => boolean;
@@ -47,6 +49,9 @@ export class ToolContext {
   }
   get memory(): MemoryStore {
     return this.dependencies.memory;
+  }
+  get remixStore(): RemixStore {
+    return this.dependencies.remixStore;
   }
   get overlay(): AgentOverlay | null {
     return this.dependencies.overlay;
