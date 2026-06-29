@@ -7,6 +7,7 @@ import { generateGoal, type TaskGoal } from "./AgentGoal";
 import { ElementRegistry } from "../page/registry";
 import type { ToolDependencies } from "./ToolContext";
 import { agentTools } from "./ToolRegistry";
+import type { MemoryStore } from "./MemoryStore";
 
 const MAX_STEPS = 60;
 const EMIT_THROTTLE_MS = 40;
@@ -14,6 +15,7 @@ const EMIT_THROTTLE_MS = 40;
 export class BrowserAgent {
   private readonly webContents: WebContents;
   private readonly llm: LLMClient;
+  private readonly memory: MemoryStore;
   private window: Window | null = null;
   private running = false;
   private aborted = false;
@@ -23,9 +25,10 @@ export class BrowserAgent {
   private flushTimer: NodeJS.Timeout | null = null;
   private dirty = false;
 
-  constructor(webContents: WebContents, llm: LLMClient) {
+  constructor(webContents: WebContents, llm: LLMClient, memory: MemoryStore) {
     this.webContents = webContents;
     this.llm = llm;
+    this.memory = memory;
   }
 
   setWindow(window: Window): void {
@@ -104,6 +107,7 @@ export class BrowserAgent {
         run,
         goal,
         llm: this.llm,
+        memory: this.memory,
         overlay: this.overlay,
         registry,
         isAborted: () => this.aborted,
@@ -236,6 +240,10 @@ export class BrowserAgent {
       "- Don't repeat an action that changed nothing; try another way.",
       "- When you believe the goal's intent is met, call done() with a natural summary or the answer. A validator checks the page; if it isn't met it tells you what's missing and you keep going.",
       "- Only give up (done, explaining why) if the goal is genuinely impossible.",
-    ].join("\n");
+      "- When the user reveals a durable preference or fact about themselves that would help in future tasks (how they like things, who they are, recurring context), remember it by calling write_memory() with a short self-contained note. Save lasting facts only, not one-off task details.",
+      this.memory.promptSection(),
+    ]
+      .filter(Boolean)
+      .join("\n");
   }
 }

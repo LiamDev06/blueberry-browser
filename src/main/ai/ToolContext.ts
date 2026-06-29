@@ -5,6 +5,7 @@ import type { ActionStatus, AgentRun, RunStatus, ToolName } from "@shared/types"
 import type { TaskGoal } from "./AgentGoal";
 import type { ElementRegistry } from "../page/registry";
 import type { LLMClient } from "./LLMClient";
+import type { MemoryStore } from "./MemoryStore";
 import type { ToolCall } from "./BrowserTool";
 
 export interface ToolDependencies {
@@ -13,6 +14,7 @@ export interface ToolDependencies {
   run: AgentRun;
   goal: TaskGoal;
   llm: LLMClient;
+  memory: MemoryStore;
   overlay: AgentOverlay | null;
   registry: ElementRegistry;
   isAborted: () => boolean;
@@ -41,6 +43,9 @@ export class ToolContext {
   }
   get llm(): LLMClient {
     return this.dependencies.llm;
+  }
+  get memory(): MemoryStore {
+    return this.dependencies.memory;
   }
   get overlay(): AgentOverlay | null {
     return this.dependencies.overlay;
