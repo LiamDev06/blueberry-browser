@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
-import type { HudPatch, Point, RemixState } from '@shared/overlay'
+import type { HudPatch, Point } from '@shared/overlay'
 
 export type HudState = {
     goal: string
     cursor: Point
-    remix: RemixState
+    remixing: boolean
 }
 
 function constructCenterPoint() {
@@ -14,15 +14,15 @@ function constructCenterPoint() {
 export function useHudState(): HudState {
     const [goal, setGoal] = useState('Working…')
     const [cursor, setCursor] = useState<Point>(constructCenterPoint())
-    const [remix, setRemix] = useState<RemixState>({ active: false })
+    const [remixing, setRemixing] = useState(false)
 
     useEffect(() => {
         function hud(patch: HudPatch): void {
             if (patch.goal !== undefined) {
                 setGoal(patch.goal.length > 0 ? patch.goal : 'Working…')
             }
-            if (patch.remix !== undefined) {
-                setRemix(patch.remix)
+            if (patch.remixing !== undefined) {
+                setRemixing(patch.remixing)
             }
         }
 
@@ -35,5 +35,5 @@ export function useHudState(): HudState {
         return () => window.overlayAPI.removeAll()
     }, [])
 
-    return { goal, cursor, remix }
+    return { goal, cursor, remixing }
 }

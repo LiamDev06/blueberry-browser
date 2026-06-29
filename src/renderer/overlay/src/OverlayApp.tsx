@@ -4,10 +4,10 @@ import { useHudState } from './hooks/useHudState'
 import { RemixLayer } from './components/RemixLayer'
 
 export function OverlayApp() {
-    const { goal, cursor, remix } = useHudState()
+    const { goal, cursor, remixing } = useHudState()
     useBlockUserInput()
 
-    if (remix.active) {
+    if (remixing) {
         return (
             <div className="hud">
                 <RemixLayer />
