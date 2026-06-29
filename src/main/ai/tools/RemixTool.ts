@@ -1,5 +1,6 @@
 import { z } from "zod";
 import sanitizeHtml from "sanitize-html";
+import { Utils } from "../../utils";
 import { BrowserTool, look, fail, type ToolResult } from "../BrowserTool";
 import type { ToolContext } from "../ToolContext";
 import {
@@ -155,7 +156,7 @@ function summarizeOps(ops: RemixOp[]): string {
 }
 
 function sanitizeFragment(html: string): string {
-  const unwrapped = html.replace(/```html?/gi, "").replace(/```/g, "").trim();
+  const unwrapped = Utils.stripCodeFences(html);
   return sanitizeHtml(unwrapped, {
     allowedTags: ALLOWED_TAGS,
     // Allow class everywhere so reused content keeps the site's own styling.

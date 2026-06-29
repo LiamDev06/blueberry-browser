@@ -51,6 +51,7 @@ export class EventManager {
         title: tab.title,
         url: tab.url,
         isActive: activeTabId === tab.id,
+        isVirtual: tab.isVirtual,
       }));
     });
 

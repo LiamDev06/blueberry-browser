@@ -1,12 +1,35 @@
-import { app, BaseWindow } from "electron";
+import { app, BaseWindow, protocol } from "electron";
 import { electronApp } from "@electron-toolkit/utils";
 import { Window } from "./Window";
 import { AppMenu } from "./Menu";
 import { EventManager } from "./EventManager";
+import { VIRTUAL_PAGE_SCHEME, virtualPageStore } from "./page/virtualPage";
 
 let mainWindow: Window | null = null;
 let eventManager: EventManager | null = null;
 let menu: AppMenu | null = null;
+
+protocol.registerSchemesAsPrivileged([
+  {
+    scheme: VIRTUAL_PAGE_SCHEME,
+    privileges: { standard: true, secure: true, supportFetchAPI: true },
+  },
+]);
+
+const registerVirtualPageProtocol = (): void => {
+  protocol.handle(VIRTUAL_PAGE_SCHEME, (request) => {
+    const html = virtualPageStore.htmlForUrl(request.url);
+    if (html === undefined) {
+      return new Response("Page not found", {
+        status: 404,
+        headers: { "content-type": "text/plain; charset=utf-8" },
+      });
+    }
+    return new Response(html, {
+      headers: { "content-type": "text/html; charset=utf-8" },
+    });
+  });
+};
 
 const createWindow = (): Window => {
   const window = new Window();
@@ -17,6 +40,8 @@ const createWindow = (): Window => {
 
 app.whenReady().then(() => {
   electronApp.setAppUserModelId("com.electron");
+
+  registerVirtualPageProtocol();
 
   mainWindow = createWindow();
 
