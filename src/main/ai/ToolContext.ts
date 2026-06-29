@@ -19,6 +19,7 @@ export interface ToolDependencies {
   registry: ElementRegistry;
   isAborted: () => boolean;
   emit: () => void;
+  awaitAnswer: (id: string) => Promise<string>;
 }
 
 export class ToolContext {
@@ -60,6 +61,18 @@ export class ToolContext {
   setStatus(status: RunStatus): void {
     this.run.status = status;
     this.dependencies.emit();
+  }
+
+  askUser(question: string, options: string[]): Promise<string> {
+    this.run.items.push({
+      id: this.call.toolCallId,
+      kind: "question",
+      question,
+      options: options.length > 0 ? options : undefined,
+    });
+    this.run.status = "waiting";
+    this.dependencies.emit();
+    return this.dependencies.awaitAnswer(this.call.toolCallId);
   }
 
   startAction(): void {
