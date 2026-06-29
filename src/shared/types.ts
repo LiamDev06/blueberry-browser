@@ -13,6 +13,7 @@ export type ToolName =
   | "switch_tab"
   | "close_tab"
   | "ask_user"
+  | "write_memory"
   | "done";
 
 export type ActionStatus = "running" | "done" | "error";
