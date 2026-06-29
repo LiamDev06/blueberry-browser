@@ -19,7 +19,7 @@ type AskUserInput = z.infer<typeof askUserInputSchema>;
 export class AskUserTool extends BrowserTool<AskUserInput> {
   readonly name = "ask_user";
   readonly description =
-    "Ask the user a question whenever their input would meaningfully change what you do — the request is ambiguous, there are several reasonable options, a wrong guess would waste real effort, missing details only they have (a size, date, account), or before something consequential. Ask at genuine decision points rather than pushing ahead on an assumption. Provide `options` for clear choices; the user can also type their own answer. Execution pauses until they respond, then you get their answer. You don't need to ask about things you can confirm yourself by looking at the page.";
+    "Ask the user a question the moment you don't have a definitive, unambiguous answer for what to do next. DO NOT GUESS. If the request leaves any real choice open — which option, which item, what details (a size, date, account), how to handle an edge case, anything where a reasonable person could pick differently — stop and ask. The only times you proceed without asking are when the request itself makes the answer unambiguous, or when you can settle it for certain by looking at the page. If you catch yourself about to assume, infer, or pick 'the most likely' option, that is exactly when to ask instead — a quick question is always cheaper than doing the wrong thing. Provide `options` for clear choices; the user can also type their own answer. Execution pauses until they respond, then you get their answer.";
   readonly inputSchema = askUserInputSchema;
 
   async execute(input: AskUserInput, ctx: ToolContext): Promise<ToolResult> {

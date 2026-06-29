@@ -1,14 +1,14 @@
 import { Loader2, Check, AlertCircle, Circle } from 'lucide-react'
 import { cn } from '@common/lib/utils'
-import type { AgentItem } from '@shared/types'
+import type { ActionItem } from '@shared/types'
 import { TOOL_META } from './toolMeta'
 
 type ActionChipProps = {
-    item: AgentItem
+    item: ActionItem
 }
 
 export function ActionChip({ item }: ActionChipProps) {
-    const meta = item.tool ? TOOL_META[item.tool] : undefined
+    const meta = TOOL_META[item.tool]
     const Icon = meta?.icon ?? Circle
     const isError = item.status === 'error'
 

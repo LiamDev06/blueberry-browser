@@ -10,9 +10,12 @@ import { BackTool } from "./tools/BackTool";
 import { ForwardTool } from "./tools/ForwardTool";
 import { ScrollTool } from "./tools/ScrollTool";
 import { ScreenshotTool } from "./tools/ScreenshotTool";
+import { RunJsTool } from "./tools/RunJsTool";
 import { RemixTool } from "./tools/RemixTool";
 import { ListTabsTool } from "./tools/ListTabsTool";
 import { CreateTabTool } from "./tools/CreateTabTool";
+import { CreateVirtualPageTool } from "./tools/CreateVirtualPageTool";
+import { UpdateVirtualPageTool } from "./tools/UpdateVirtualPageTool";
 import { SwitchTabTool } from "./tools/SwitchTabTool";
 import { CloseTabTool } from "./tools/CloseTabTool";
 import { AskUserTool } from "./tools/AskUserTool";
@@ -82,9 +85,12 @@ export const agentTools = new ToolRegistry([
   new ForwardTool(),
   new ScrollTool(),
   new ScreenshotTool(),
+  new RunJsTool(),
   new RemixTool(),
   new ListTabsTool(),
   new CreateTabTool(),
+  new CreateVirtualPageTool(),
+  new UpdateVirtualPageTool(),
   new SwitchTabTool(),
   new CloseTabTool(),
   new AskUserTool(),

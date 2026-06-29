@@ -5,6 +5,7 @@ import { SideBar } from "./SideBar";
 import { AgentOverlay } from "./ai/AgentOverlay";
 import { replayRemix } from "./page/remix";
 import { LayoutHelper } from "./layout";
+import { virtualPageStore } from "./page/virtualPage";
 
 export class Window {
   private _baseWindow: BaseWindow;
@@ -138,10 +139,33 @@ export class Window {
     return tab;
   }
 
+  createVirtualPage(html: string, title?: string): Tab {
+    const tab = this.createTab(virtualPageStore.create(html, title));
+    tab.setVirtual(true);
+    this.switchActiveTab(tab.id);
+    return tab;
+  }
+
+  updateVirtualPage(tabId: string, html: string, title?: string): boolean {
+    const tab = this.tabsMap.get(tabId);
+    if (!tab || !tab.isVirtual) {
+      return false;
+    }
+    if (!virtualPageStore.update(tab.url, html, title)) {
+      return false;
+    }
+    tab.reload();
+    return true;
+  }
+
   closeTab(tabId: string): boolean {
     const tab = this.tabsMap.get(tabId);
     if (!tab) {
       return false;
+    }
+
+    if (tab.isVirtual) {
+      virtualPageStore.deleteByUrl(tab.url);
     }
 
     // Remove the WebContentsView from the window
