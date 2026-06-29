@@ -162,6 +162,7 @@ export class EventManager {
 
     // Chat message
     ipcMain.handle("sidebar-chat-message", async (_, request) => {
+      this.mainWindow.dismissRemixPrompt();
       // The LLMClient now handles getting the screenshot and context directly
       await this.mainWindow.sidebar.client.sendChatMessage(request);
     });
@@ -179,6 +180,7 @@ export class EventManager {
 
     // Run a browser-use agent task
     ipcMain.handle("sidebar-run-agent", async (_, request) => {
+      this.mainWindow.dismissRemixPrompt();
       await this.mainWindow.sidebar.agent.runTask(request);
     });
 

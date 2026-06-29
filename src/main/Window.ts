@@ -278,13 +278,9 @@ export class Window {
     return this._agentOverlay;
   }
 
-  onAgentRunStarted(): void {
-    this._sideBar.sendRemixPrompt(null);
-  }
-
   private evaluateRemixPrompt(): void {
     const tab = this.activeTab;
-    if (!tab || this._sideBar.agent.isRunning) {
+    if (!tab) {
       this._sideBar.sendRemixPrompt(null);
       return;
     }
@@ -309,7 +305,8 @@ export class Window {
     const remix = this._sideBar.remixes.get(id);
     const tab = this.activeTab;
     this._sideBar.sendRemixPrompt(null);
-    if (!remix || !tab) {
+    // Don't reload the page out from under a running agent.
+    if (!remix || !tab || this._sideBar.agent.isRunning) {
       return false;
     }
 

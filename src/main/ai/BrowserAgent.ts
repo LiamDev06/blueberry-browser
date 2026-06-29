@@ -141,7 +141,6 @@ export class BrowserAgent {
       this.setStatus("running");
 
       this.overlay?.show(goal.goal, this.window?.sidebar.getIsVisible() ?? true);
-      this.window?.onAgentRunStarted();
 
       const registry = new ElementRegistry();
       const initial = await registry.observe(tab);

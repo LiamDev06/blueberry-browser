@@ -5,6 +5,7 @@ import type { ResolvedRemixOp } from "./remix";
 export type StoredRemix = {
   id: string;
   url: string;
+  runId: string;
   pageTitle: string;
   label: string;
   ops: ResolvedRemixOp[];
@@ -21,6 +22,7 @@ export class RemixStore extends JsonFileStore<StoredRemix> {
 
   add(
     url: string,
+    runId: string,
     pageTitle: string,
     label: string,
     ops: ResolvedRemixOp[]
@@ -30,9 +32,22 @@ export class RemixStore extends JsonFileStore<StoredRemix> {
       return null;
     }
 
+    const existing = this.items.find(
+      (entry) => entry.url === key && entry.runId === runId
+    );
+    if (existing) {
+      existing.pageTitle = pageTitle;
+      existing.label = label.trim() || existing.label;
+      existing.ops = ops;
+      existing.createdAt = Date.now();
+      void this.persist();
+      return existing;
+    }
+
     const remix: StoredRemix = {
       id: randomUUID(),
       url: key,
+      runId,
       pageTitle,
       label: label.trim() || "Remix",
       ops,
