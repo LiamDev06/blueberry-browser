@@ -55,3 +55,129 @@ body,
     text-overflow: ellipsis;
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
 }
+
+/* Remixing effect */
+.remix {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+}
+
+.remix-scrim {
+    position: fixed;
+    inset: 0;
+    background: rgba(107, 78, 255, 0.06);
+    box-shadow: inset 0 0 0 3px rgba(107, 78, 255, 0.5);
+    animation: remix-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes remix-pulse {
+    0%,
+    100% {
+        box-shadow: inset 0 0 0 3px rgba(107, 78, 255, 0.32);
+    }
+    50% {
+        box-shadow: inset 0 0 0 3px rgba(107, 78, 255, 0.72);
+    }
+}
+
+.remix-sheen {
+    position: absolute;
+    inset: -50%;
+    background: linear-gradient(
+        115deg,
+        transparent 35%,
+        rgba(124, 99, 255, 0.16) 47%,
+        rgba(176, 158, 255, 0.4) 50%,
+        rgba(124, 99, 255, 0.16) 53%,
+        transparent 65%
+    );
+    background-size: 250% 250%;
+    animation: remix-sheen-move 1.6s linear infinite;
+}
+
+@keyframes remix-sheen-move {
+    0% {
+        background-position: 100% 100%;
+    }
+    100% {
+        background-position: 0% 0%;
+    }
+}
+
+.remix-scan {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(176, 158, 255, 0.95), transparent);
+    box-shadow: 0 0 12px 2px rgba(124, 99, 255, 0.7);
+    animation: remix-scan-move 1.9s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes remix-scan-move {
+    0% {
+        top: -4px;
+        opacity: 0;
+    }
+    12% {
+        opacity: 1;
+    }
+    88% {
+        opacity: 1;
+    }
+    100% {
+        top: 100%;
+        opacity: 0;
+    }
+}
+
+.banner--remix {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(107, 78, 255, 0.94);
+    box-shadow: 0 8px 30px rgba(107, 78, 255, 0.42);
+}
+
+.remix-spark {
+    animation: remix-spark-spin 1.8s ease-in-out infinite;
+}
+
+@keyframes remix-spark-spin {
+    0%,
+    100% {
+        transform: scale(1) rotate(0deg);
+        opacity: 0.9;
+    }
+    50% {
+        transform: scale(1.25) rotate(18deg);
+        opacity: 1;
+    }
+}
+
+.remix-dots {
+    display: inline-block;
+    width: 1.4em;
+    text-align: left;
+}
+
+.remix-dots::after {
+    content: '';
+    animation: remix-dots 1.4s steps(1, end) infinite;
+}
+
+@keyframes remix-dots {
+    0% {
+        content: '';
+    }
+    25% {
+        content: '.';
+    }
+    50% {
+        content: '..';
+    }
+    75% {
+        content: '...';
+    }
+}

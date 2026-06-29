@@ -6,17 +6,26 @@ interface Point {
   y: number;
 }
 
+interface RemixState {
+  active: boolean;
+}
+
+interface HudPatch {
+  goal?: string;
+  remix?: RemixState;
+}
+
 const overlayAPI = {
-  // Begin/reset a run with the goal label
-  onStart: (callback: (goal: string) => void) => {
-    electronAPI.ipcRenderer.on("overlay:start", (_, goal) => callback(goal));
+  // Patch the HUD presentation: the goal label and/or the remixing effect
+  onHud: (callback: (patch: HudPatch) => void) => {
+    electronAPI.ipcRenderer.on("overlay:hud", (_, patch) => callback(patch));
   },
   // Move the cursor to a viewport position
   onMove: (callback: (point: Point) => void) => {
     electronAPI.ipcRenderer.on("overlay:move", (_, point) => callback(point));
   },
   removeAll: () => {
-    electronAPI.ipcRenderer.removeAllListeners("overlay:start");
+    electronAPI.ipcRenderer.removeAllListeners("overlay:hud");
     electronAPI.ipcRenderer.removeAllListeners("overlay:move");
   },
 };

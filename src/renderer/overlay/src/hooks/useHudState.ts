@@ -5,9 +5,19 @@ export type Point = {
     y: number
 }
 
+export type RemixState = {
+    active: boolean
+}
+
+export type HudPatch = {
+    goal?: string
+    remix?: RemixState
+}
+
 export type HudState = {
     goal: string
     cursor: Point
+    remix: RemixState
 }
 
 function constructCenterPoint() {
@@ -17,20 +27,26 @@ function constructCenterPoint() {
 export function useHudState(): HudState {
     const [goal, setGoal] = useState('Working…')
     const [cursor, setCursor] = useState<Point>(constructCenterPoint())
+    const [remix, setRemix] = useState<RemixState>({ active: false })
 
     useEffect(() => {
-        function start(nextGoal: string): void {
-            setGoal(nextGoal.length > 0 ? nextGoal : 'Working…')
+        function hud(patch: HudPatch): void {
+            if (patch.goal !== undefined) {
+                setGoal(patch.goal.length > 0 ? patch.goal : 'Working…')
+            }
+            if (patch.remix !== undefined) {
+                setRemix(patch.remix)
+            }
         }
 
         function move(point: Point): void {
             setCursor(point)
         }
 
-        window.overlayAPI.onStart(start)
+        window.overlayAPI.onHud(hud)
         window.overlayAPI.onMove(move)
         return () => window.overlayAPI.removeAll()
     }, [])
 
-    return { goal, cursor }
+    return { goal, cursor, remix }
 }

@@ -40,24 +40,29 @@ export class RemixTool extends BrowserTool<RemixInput> {
       return this.remixWholeDocument(input, ctx);
     }
 
-    const raw = await ctx.llm.generate(
-      buildSystemPrompt(),
-      buildInPlacePrompt(input.instruction, model, ctx.tab.title, ctx.tab.url)
-    );
+    ctx.overlay?.startRemix();
+    try {
+      const raw = await ctx.llm.generate(
+        buildSystemPrompt(),
+        buildInPlacePrompt(input.instruction, model, ctx.tab.title, ctx.tab.url)
+      );
 
-    const plan = planFromResponse(raw, model.regions);
-    const result = await applyRemix(ctx.tab, plan.target, plan.fragment);
+      const plan = planFromResponse(raw, model.regions);
+      const result = await applyRemix(ctx.tab, plan.target, plan.fragment);
 
-    if (!result.ok) {
-      return this.remixWholeDocument(input, ctx);
+      if (!result.ok) {
+        return this.remixWholeDocument(input, ctx);
+      }
+
+      const where =
+        plan.target.kind === "region" ? "part of the page" : "the page";
+      return look(
+        `Remixed ${ctx.tab.title || "page"}`,
+        `Rewrote ${where} in place per: ${input.instruction}`
+      );
+    } finally {
+      ctx.overlay?.endRemix();
     }
-
-    const where =
-      plan.target.kind === "region" ? "part of the page" : "the page";
-    return look(
-      `Remixed ${ctx.tab.title || "page"}`,
-      `Rewrote ${where} in place per: ${input.instruction}`
-    );
   }
 
   private async remixWholeDocument(
@@ -69,16 +74,21 @@ export class RemixTool extends BrowserTool<RemixInput> {
       return fail("Couldn't remix", "The page had no readable text to rewrite.");
     }
 
-    const fragment = await ctx.llm.generate(
-      buildFallbackSystemPrompt(),
-      buildFallbackPrompt(input.instruction, page.title, page.url, page.text)
-    );
+    ctx.overlay?.startRemix();
+    try {
+      const fragment = await ctx.llm.generate(
+        buildFallbackSystemPrompt(),
+        buildFallbackPrompt(input.instruction, page.title, page.url, page.text)
+      );
 
-    await replaceDocument(ctx.tab, buildFallbackDocument(sanitizeFragment(fragment)));
-    return look(
-      `Remixed ${page.title || "page"}`,
-      `Rewrote the page per: ${input.instruction}`
-    );
+      await replaceDocument(ctx.tab, buildFallbackDocument(sanitizeFragment(fragment)));
+      return look(
+        `Remixed ${page.title || "page"}`,
+        `Rewrote the page per: ${input.instruction}`
+      );
+    } finally {
+      ctx.overlay?.endRemix();
+    }
   }
 }
 
