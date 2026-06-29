@@ -1,4 +1,5 @@
 import sanitizeHtml from "sanitize-html";
+import { Utils } from "../utils";
 
 export const VIRTUAL_PAGE_SCHEME = "blueberry";
 
@@ -31,7 +32,7 @@ function ensureTitle(html: string, fallbackTitle?: string): string {
 }
 
 function sanitizeDocument(html: string, fallbackTitle?: string): string {
-  const clean = sanitizeHtml(html, {
+  const clean = sanitizeHtml(Utils.stripCodeFences(html), {
     allowedTags: ALLOWED_TAGS,
     allowedAttributes: {
       "*": ["class", "id", "style"],
@@ -87,12 +88,8 @@ class VirtualPageStore {
     if (!url.startsWith(`${VIRTUAL_PAGE_SCHEME}://`)) {
       return null;
     }
-    try {
-      const id = new URL(url).pathname.replace(/^\//, "");
-      return id || null;
-    } catch {
-      return null;
-    }
+    const id = Utils.safeParseUrl(url)?.pathname.replace(/^\//, "");
+    return id || null;
   }
 }
 
